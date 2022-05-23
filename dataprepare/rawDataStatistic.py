@@ -1,12 +1,11 @@
 import json
 import os
 import pickle
+from config import PreprocessConfig
+BASE_PATH = PreprocessConfig.data_base_path
 
-BASE_PATH = "D:\workspace\mine\idea\LECL\data"
-
-fileName = ["data_train",]
-dataPath = os.path.join(BASE_PATH,"dataset","CAIL-SMALL")
-
+dataPath = os.path.join(BASE_PATH,"CAIL-SMALL")
+fileNames = ["train"]
 # 过滤掉值小于100的项目
 def filter_dict(data_dict):
     return {k: v for k, v in data_dict.items() if v >= 100}
@@ -23,12 +22,12 @@ def reset_dict(data_dict):
     return {k: 0 for k, v in data_dict.items()}
 
 
-def func(fileName, prefix):
+def func(fileNames, prefix):
     dict_articles = {}  # 法律条款：数量
     dict_accusation = {}  # 指控：数量
-    for i in range(len(fileName)):
-        print(f'data_{fileName[i]}.json')
-        with open(os.path.join(dataPath,f"{fileName[i]}.json"), 'r', encoding='utf-8') as f:
+    for i in range(len(fileNames)):
+        print(f'data_{fileNames[i]}.json process beginning')
+        with open(os.path.join(dataPath,f"data_{fileNames[i]}.json"), 'r', encoding='utf-8') as f:
             for line in f:
                 example = json.loads(line)
                 example_articles = example['meta']['relevant_articles']
@@ -45,7 +44,7 @@ def func(fileName, prefix):
                     else:
                         dict_accusation.update({example_accusation[0]: 1})
             f.close()
-        print(f'The {fileName[i]} dataset is read over')
+        print(f'The {fileNames[i]} dataset is read over')
     # 将法律条款统计结果序列化
     f = open(f"./{prefix}_articles2num.pkl", "wb")
     pickle.dump(dict_articles, f)
@@ -63,15 +62,19 @@ def func(fileName, prefix):
     f.close()
 
 
+# func(fileNames,"train")
+
+
 def func1(dict_articles, dict_accusation):
     articles_sum = sum_dict(dict_articles)
     accusation_sum = sum_dict(dict_accusation)
     f1 = open("../dataset/CAIL-SMALL/data_train_filtered.json", "w", encoding="utf-8")
+
     while articles_sum != accusation_sum:
         dict_accusation = reset_dict(dict_accusation)
         dict_articles = reset_dict(dict_articles)
-        for i in range(len(fileName)):
-            with open(os.path.join(dataPath, f"{fileName[i]}.json"), 'r', encoding='utf-8') as f:
+        for i in range(len(fileNames)):
+            with open(os.path.join(dataPath, f"data_{fileNames[i]}.json"), 'r', encoding='utf-8') as f:
                 for line in f:
                     example = json.loads(line)
                     example_articles = example['meta']['relevant_articles']
@@ -88,7 +91,7 @@ def func1(dict_articles, dict_accusation):
                         else:
                             continue
                 f.close()
-            print(f'The {fileName[i]} dataset is read over')
+            print(f'The {fileNames[i]} dataset is read over')
 
         print(dict_articles)
         print(dict_accusation)
@@ -111,8 +114,18 @@ def func1(dict_articles, dict_accusation):
         print('accusation_sum: ' + str(accusation_sum))
         print("\n\n\n")
 
-    for i in range(len(fileName)):
-        with open(os.path.join(dataPath, f"{fileName[i]}.json"), 'r', encoding='utf-8') as f:
+    # 将法律条款统计结果序列化
+    f = open(f"./train_filtered_articles2num.pkl", "wb")
+    pickle.dump(dict_articles, f)
+    f.close()
+
+    # 指控统计结果序列化
+    f = open(f"./train_filtered_accusation2num.pkl", "wb")
+    pickle.dump(dict_accusation, f)
+    f.close()
+
+    for i in range(len(fileNames)):
+        with open(os.path.join(dataPath, f"data_{fileNames[i]}.json"), 'r', encoding='utf-8') as f:
             for line in f:
                 example = json.loads(line)
                 example_articles = example['meta']['relevant_articles']
@@ -129,7 +142,7 @@ def func1(dict_articles, dict_accusation):
                     else:
                         continue
             f1.close()
-        print(f'The {fileName[i]} dataset is read over')
+        print(f'The {fileNames[i]} dataset is read over')
 
 
 
@@ -137,9 +150,11 @@ def func1(dict_articles, dict_accusation):
 print("--------------------------过滤前-----------------------------")
 f = open("train_accusation2num.pkl", "rb")
 dict_accusations = pickle.load(f)  # 指控：数量
-f.close()
+
 f = open("train_articles2num.pkl", "rb")
 dict_articles = pickle.load(f)
+
+f.close()
 
 print(sum_dict(dict_articles))
 print(sum_dict(dict_accusations))

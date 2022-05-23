@@ -9,6 +9,9 @@ __pycache__/
 # pycharm setting
 .idea/
 
+# 数据集
+dataset/
+
 # Distribution / packaging
 .Python
 build/

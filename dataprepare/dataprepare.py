@@ -11,7 +11,7 @@ def stopwordslist(filepath):
     stopwords = [line.strip() for line in open(filepath, 'r', encoding='utf-8').readlines()]
     return stopwords
 
-# 大写数字转阿拉伯数字
+# 大写数字转阿拉伯数字//////
 def hanzi_to_num(hanzi_1):
     # for num<10000
     hanzi = hanzi_1.strip().replace('零', '')

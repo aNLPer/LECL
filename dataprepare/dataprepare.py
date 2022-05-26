@@ -1,17 +1,25 @@
+# coding:utf-8
 import os
 import pickle
+import re
 import json
 import jieba
 import thulac
+import pyhanlp as hanlp
 import utils.commonUtils as utils
+from string import punctuation
+add_punc='，。、【 】 “”：；（）《》‘’{}？！⑦()、%^>℃：.”“^-——=&#@￥'
+all_punc = punctuation + add_punc
 
+
+BATH_DATA_PATH = "C:\D\Workspace\mine\idea\LECL\dataset"
 
 # 加载停用词表
 def stopwordslist(filepath):
     stopwords = [line.strip() for line in open(filepath, 'r', encoding='utf-8').readlines()]
     return stopwords
 
-# 大写数字转阿拉伯数字//////
+# 大写数字转阿拉伯数字
 def hanzi_to_num(hanzi_1):
     # for num<10000
     hanzi = hanzi_1.strip().replace('零', '')
@@ -41,6 +49,7 @@ def hanzi_to_num(hanzi_1):
             res = 0
     return int(thou + res + tmp)
 
+# 获取分词器
 def get_cutter(dict_path="Thuocl_seg.txt", mode='thulac', stop_words_filtered=False):
     '''
     获取分词器
@@ -50,7 +59,7 @@ def get_cutter(dict_path="Thuocl_seg.txt", mode='thulac', stop_words_filtered=Fa
     :return:
     '''
     if stop_words_filtered:
-        stopwords = stopwordslist('law_processed/stop_word.txt')  # 这里加载停用词的路径
+        stopwords = stopwordslist('stop_word.txt')  # 这里加载停用词的路径
     else:
         stopwords = []
     if mode == 'jieba':
@@ -60,6 +69,7 @@ def get_cutter(dict_path="Thuocl_seg.txt", mode='thulac', stop_words_filtered=Fa
         thu = thulac.thulac(user_dict=dict_path, seg_only=True)
         return lambda x: [a for a in thu.cut(x, text=True).split(' ') if a not in stopwords]
 
+# 处理单个法律文书
 def process_law(law, cut):
     # single article
     # cut=get_cutter()
@@ -96,7 +106,54 @@ def process_law(law, cut):
     n_word = [len(i) for i in condition_list]
     return condition_list, n_word
 
+# law内容过滤
+def filterStr(law):
+    # 删除括号及括号内的内容
+    pattern_bracket = re.compile(r"[(（].*?[）)]")
+    law = pattern_bracket.sub("",law)
 
+    # 删除第一个标点之前的内容
+    pattern_head_content = re.compile(r".*?[，：]")
+    head_content = pattern_head_content.match(law)
+    if head_content is not None:
+        head_content_span = head_content.span()
+        law = law[head_content_span[1]:]
+
+    return law
+
+
+
+thu = thulac.thulac(user_dict="Thuocl_seg.txt", seg_only=True)
+print(thu.cut(law, text=True))
+
+# print(list(jieba.cut(law)))
+#
+# print([term.word for term in hanlp.HanLP.segment(law)])
+
+
+# cutter = get_cutter(mode="thulac", stop_words_filtered=True)
+# print(len(law))
+# print(cutter(law))
+# print(len(cutter(law)))
+# condition_list, n_word = process_law(law, get_cutter(mode="thulac", stop_words_filtered=True))
+# print(condition_list)
+# print(len(condition_list), n_word)
+
+
+# cutter = get_cutter(mode="thulac", stop_words_filtered=True)
+# counter = 0
+# c = 0
+# with open(os.path.join(BATH_DATA_PATH, "CAIL-SMALL","data_train_filtered.json"), "r", encoding="utf-8") as f:
+#     for line in f:
+#         c+=1
+#         print(c)
+#         example = json.loads(line)
+#         example_fact = example["fact"]
+#         condition_list, n_word = process_law(example_fact, cutter)
+#         if len(condition_list)>1:
+#             print(example_fact)
+#         if n_word[0]>500: counter += 1
+# print(counter)
 
 # 生成acc2desc字典
 def get_acc_desc(file_path):
@@ -128,12 +185,6 @@ def getData(case_path, acc2desc):
 
 
 
-
-
-
-
-
-get_acc_desc(file_path="accusation_description.json")
 
 # f = open("train_filtered_accusation2num.pkl","rb")
 # dict_accusation = pickle.load(f)

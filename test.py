@@ -1,2 +1,3 @@
-print("sdfas。safasf。啊书法大赛。".split('。'))
-print("sdfaf"[:-1])
+import re
+ss = "ssssaaasssssaaassss"
+print(re.sub("a" , " ", ss))

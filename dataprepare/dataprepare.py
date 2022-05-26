@@ -144,9 +144,26 @@ def getLang(lang_name):
     print("train data statistic end.")
 
 def word2Index(file_path, lang):
+    # 数据集
     fi = open(file_path, "r", encoding="utf-8")
+    fo = open(os.path.join(BATH_DATA_PATH, "data_train_forModel.txt"), "w", encoding="utf-8")
+    for line in fi:
+        # 文本数据
+        item = json.loads(line)
+        # 将文本妆化成索引
+        item_num = []
 
-
+        fact_num = []
+        for fact in item[0]:
+            fact_num.append([lang.word2index[word] for word in fact])
+        item_num.append(fact_num)
+        item_num.append(item[1])
+        item_num.append([lang.word2index[word] for word in item[2]])
+        # 序列化并写入
+        item_num_str = json.dumps(item_num, ensure_ascii=False)
+        fo.write(item_num_str+"\n")
+    fi.close()
+    fo.close()
 
 if __name__=="__main__":
     # 生成训练数据集
@@ -161,6 +178,7 @@ if __name__=="__main__":
     getLang(lang_name)
     f = open("lang_data_train_preprocessed.pkl", "rb")
     lang = pickle.load(f)
+    f.close()
     print(lang.n_words)
 
     # 将数据集中的word转换为index

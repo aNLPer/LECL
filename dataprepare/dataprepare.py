@@ -5,12 +5,11 @@ import re
 import json
 import jieba
 import thulac
-import pyhanlp as hanlp
 import utils.commonUtils as utils
 from string import punctuation
 
 
-BATH_DATA_PATH = "C:\D\Workspace\mine\idea\LECL\dataset"
+BATH_DATA_PATH = "..\dataset\CAIL-SMALL"
 
 # 加载停用词表、特殊符号表、标点
 def get_filter_symbols(filepath):
@@ -20,8 +19,6 @@ def get_filter_symbols(filepath):
     :return:list
     '''
     return list(set([line.strip() for line in open(filepath, 'r', encoding='utf-8').readlines()]))
-
-
 
 # 大写数字转阿拉伯数字
 def hanzi_to_num(hanzi_1):
@@ -123,11 +120,10 @@ def getData(case_path, acc2desc):
     items = []
     with open(case_path, "r", encoding="utf-8") as f:
         for line in f:
-            item = []
+            item = [] # 单条训练数据
             example = json.loads(line)
             # 删除
             example_fact = filterStr(example["fact"])
-
             # 分词,去除特殊符号
             example_fact_1 = [word for word in thu.cut(example_fact, text=True).split(" ") if word not in special_symbols]
             # 去除停用词
@@ -138,13 +134,14 @@ def getData(case_path, acc2desc):
             example_fact_4 = [word for word in example_fact_3 if word not in stopwords]
             facts = [example_fact_1, example_fact_2, example_fact_3, example_fact_4]
             item.append(facts)
-            item.append(example['meta']['accusation'])
-            item.append(acc2desc[example['meta']['accusation']])
+            item.append(example['meta']['accusation'][0])
+            item.append(acc2desc[example['meta']['accusation'][0]])
             items.append(item)
     return items
 
 data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
 acc_desc = get_acc_desc("accusation_description.json")
+print(acc_desc["故意伤害"])
 getData(data_path, acc_desc)
 
 

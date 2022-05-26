@@ -97,6 +97,7 @@ def getData(case_path, acc2desc):
             example_fact = filterStr(example["fact"])
             # 分词,去除特殊符号
             example_fact_1 = [word for word in thu.cut(example_fact, text=True).split(" ") if word not in special_symbols]
+            example_fact_1 = [re.sub(r"\d+","x", word) for word in example_fact_1]
             # 去除停用词
             example_fact_2 = [word for word in example_fact_1 if word not in stopwords]
             # 去除标点

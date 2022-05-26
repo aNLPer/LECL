@@ -8,16 +8,20 @@ import thulac
 import pyhanlp as hanlp
 import utils.commonUtils as utils
 from string import punctuation
-add_punc='，。、【 】 “”：；（）《》‘’{}？！⑦()、%^>℃：.”“^-——=&#@￥'
-all_punc = punctuation + add_punc
 
 
 BATH_DATA_PATH = "C:\D\Workspace\mine\idea\LECL\dataset"
 
-# 加载停用词表
-def stopwordslist(filepath):
-    stopwords = [line.strip() for line in open(filepath, 'r', encoding='utf-8').readlines()]
-    return stopwords
+# 加载停用词表、特殊符号表、标点
+def get_filter_symbols(filepath):
+    '''
+    根据mode加载标点、特殊词或者停用词
+    :param mode:
+    :return:list
+    '''
+    return list(set([line.strip() for line in open(filepath, 'r', encoding='utf-8').readlines()]))
+
+
 
 # 大写数字转阿拉伯数字
 def hanzi_to_num(hanzi_1):
@@ -49,63 +53,6 @@ def hanzi_to_num(hanzi_1):
             res = 0
     return int(thou + res + tmp)
 
-# 获取分词器
-def get_cutter(dict_path="Thuocl_seg.txt", mode='thulac', stop_words_filtered=False):
-    '''
-    获取分词器
-    :param dict_path: jieba、thulac使用的用户字典
-    :param mode: 分词工具选择
-    :param stop_words_filtered: 停用词过滤
-    :return:
-    '''
-    if stop_words_filtered:
-        stopwords = stopwordslist('stop_word.txt')  # 这里加载停用词的路径
-    else:
-        stopwords = []
-    if mode == 'jieba':
-        jieba.load_userdict(dict_path)
-        return lambda x: [a for a in list(jieba.cut(x)) if a not in stopwords]
-    elif mode == 'thulac':
-        thu = thulac.thulac(user_dict=dict_path, seg_only=True)
-        return lambda x: [a for a in thu.cut(x, text=True).split(' ') if a not in stopwords]
-
-# 处理单个法律文书
-def process_law(law, cut):
-    # single article
-    # cut=get_cutter()
-    condition_list = []
-    for each in law.split('。')[:-1]:
-        suffix = None
-        if '：' in each:
-            each, suffix = each.split('：')
-            suffix = cut(suffix)
-        words = cut(each)
-        seg_point = [-1]
-        conditions = []
-
-        for i in range(len(words)):
-            if words[i] == '；' or words[i] == ';':
-                seg_point.append(i)
-        seg_point.append(len(words))
-        for i in range(len(seg_point) - 1):
-            for j in range(seg_point[i + 1] - 1, seg_point[i], -1):
-                if j + 1 < len(words) and words[j] == '的' and words[j + 1] == '，':
-                    conditions.append(words[seg_point[i] + 1:j + 1])
-                    break
-        # context=law.split('。')[:-1]
-        for i in range(1, len(conditions)):
-            conditions[i] = conditions[0] + conditions[i]
-        # if len(condition_list)==0 and len(conditions)==0:
-        #     conditions.append([])
-        if suffix is not None:
-            conditions = [x + suffix for x in conditions]
-        condition_list += conditions
-
-    if condition_list == []:
-        condition_list.append(cut(law[:-1]))
-    n_word = [len(i) for i in condition_list]
-    return condition_list, n_word
-
 # law内容过滤
 def filterStr(law):
     # 删除括号及括号内的内容
@@ -121,39 +68,25 @@ def filterStr(law):
 
     return law
 
-
-
-thu = thulac.thulac(user_dict="Thuocl_seg.txt", seg_only=True)
-print(thu.cut(law, text=True))
-
-# print(list(jieba.cut(law)))
-#
-# print([term.word for term in hanlp.HanLP.segment(law)])
-
-
-# cutter = get_cutter(mode="thulac", stop_words_filtered=True)
-# print(len(law))
-# print(cutter(law))
-# print(len(cutter(law)))
-# condition_list, n_word = process_law(law, get_cutter(mode="thulac", stop_words_filtered=True))
-# print(condition_list)
-# print(len(condition_list), n_word)
-
-
-# cutter = get_cutter(mode="thulac", stop_words_filtered=True)
-# counter = 0
-# c = 0
-# with open(os.path.join(BATH_DATA_PATH, "CAIL-SMALL","data_train_filtered.json"), "r", encoding="utf-8") as f:
-#     for line in f:
-#         c+=1
-#         print(c)
-#         example = json.loads(line)
-#         example_fact = example["fact"]
-#         condition_list, n_word = process_law(example_fact, cutter)
-#         if len(condition_list)>1:
-#             print(example_fact)
-#         if n_word[0]>500: counter += 1
-# print(counter)
+# 获取分词器
+def get_cutter(dict_path="Thuocl_seg.txt", mode='thulac', stop_words_filtered=False):
+    '''
+    获取分词器
+    :param dict_path: jieba、thulac使用的用户字典
+    :param mode: 分词工具选择
+    :param stop_words_filtered: 停用词过滤
+    :return:
+    '''
+    if stop_words_filtered:
+        stopwords = get_filter_symbols('stop_word.txt', mode="stop")  # 这里加载停用词的路径
+    else:
+        stopwords = []
+    if mode == 'jieba':
+        jieba.load_userdict(dict_path)
+        return lambda x: [a for a in list(jieba.cut(x)) if a not in stopwords]
+    elif mode == 'thulac':
+        thu = thulac.thulac(user_dict=dict_path, seg_only=True)
+        return lambda x: [a for a in thu.cut(x, text=True).split(' ') if a not in stopwords]
 
 # 生成acc2desc字典
 def get_acc_desc(file_path):
@@ -168,21 +101,51 @@ def get_acc_desc(file_path):
 # 构造数据集
 def getData(case_path, acc2desc):
     '''
-    构造数据集：["case_desc", "acc", "acc_desc"]
+    构造数据集：[[case_desc,case_desc,...], "acc", "acc_desc"]
+    # 分词
+    # 去除特殊符号（样本1）
+    # 去除停用词（样本2）
+    # 去除标点（样本3）
+    # 去除停用词和标点（样本4）
+    # 同类别的accusation(样本+4)
     :param case_path: 案件描述文件
     :param acc2desc: 指控：指控描述 （字典）
-    :return: [["case_desc", "acc", "acc_desc"],......]
+    :return: [[[case_desc,case_desc,...], "acc", "acc_desc"],]
     '''
+    # 加载分词器
+    thu = thulac.thulac(user_dict="Thuocl_seg.txt", seg_only=True)
+    # 加载特殊符号
+    special_symbols = get_filter_symbols("special_symbol.txt")
+    # 加载停用词表
+    stopwords = get_filter_symbols("stop_word.txt")
+    # 加载标点
+    punctuations = get_filter_symbols("punctuation.txt")
     items = []
     with open(case_path, "r", encoding="utf-8") as f:
         for line in f:
             item = []
             example = json.loads(line)
-            item.append(example["fact"])
+            # 删除
+            example_fact = filterStr(example["fact"])
+
+            # 分词,去除特殊符号
+            example_fact_1 = [word for word in thu.cut(example_fact, text=True).split(" ") if word not in special_symbols]
+            # 去除停用词
+            example_fact_2 = [word for word in example_fact_1 if word not in stopwords]
+            # 去除标点
+            example_fact_3 = [word for word in example_fact_1 if word not in punctuations]
+            # 去除停用词和标点
+            example_fact_4 = [word for word in example_fact_3 if word not in stopwords]
+            facts = [example_fact_1, example_fact_2, example_fact_3, example_fact_4]
+            item.append(facts)
             item.append(example['meta']['accusation'])
             item.append(acc2desc[example['meta']['accusation']])
             items.append(item)
+    return items
 
+data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
+acc_desc = get_acc_desc("accusation_description.json")
+getData(data_path, acc_desc)
 
 
 

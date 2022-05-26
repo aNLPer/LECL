@@ -10,3 +10,5 @@ print("列表序列化后的内容为：{0},类型为：{1}".format(list_str,typ
 # 对字符串list_str进行反序列化
 str_list = json.loads(list_str)
 print("字符串反序列化后的内容为：{0}，类型为：{1}".format(str_list,type(str_list)))
+str_list = json.loads("[1,23]\n")
+print(str_list)

@@ -112,46 +112,55 @@ def getData(case_path, acc2desc):
             acc_desc = [word for word in thu.cut(acc_desc, text=True).split(" ")
                         if word not in stopwords and word not in punctuations]
             item.append(acc_desc)
-            list_str = json.dumps(item)
-            fw.write(list_str)
+            list_str = json.dumps(item,ensure_ascii=False)
+            fw.write(list_str+"\n")
             if count%5000==0:
                 print(f"已有{count}条数据被处理")
     fw.close()
 
-
-# 生成训练数据集
-data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
-acc_desc = get_acc_desc("accusation_description.json")
-print("start processing data......")
-getData(data_path, acc_desc)
-print("data processing end.")
-
-# 统计训练集语料库生成对象
-print("start statistic train data......")
-lang = Lang("2018_CAIL_SMALL_TRAIN")
-fr = open("..\dataset\CAIL-SMALL\data_train_preprocessed.txt", "r", encoding="utf-8")
-count = 0
-for line in fr:
-    count+=1
-    i = json.loads(line)
-    descs = i[2]
-    lang.addSentence(descs)
-    facts = i[0]
-    for fact in facts:
-        lang.addSentence(fact)
-    if count%5000:
-        print(f"已统计{5000}条数据")
-fr.close()
-# 序列化lang
-f = open("lang_data_train_preprocessed.pkl", "wb")
-pickle.dump(lang,f)
-f.close()
-print("train data statistic end.")
+def getLang(lang_name):
+    lang = Lang(lang_name)
+    print("start statistic train data......")
+    fr = open("..\dataset\CAIL-SMALL\data_train_preprocessed.txt", "r", encoding="utf-8")
+    count = 0
+    for line in fr:
+        if line.strip() == "":
+            continue
+        count += 1
+        i = json.loads(line)
+        descs = i[2]
+        lang.addSentence(descs)
+        facts = i[0]
+        for fact in facts:
+            lang.addSentence(fact)
+        if count % 5000:
+            print(f"已统计{5000}条数据")
+    fr.close()
+    # 序列化lang
+    f = open("lang_data_train_preprocessed.pkl", "wb")
+    pickle.dump(lang, f)
+    f.close()
+    print("train data statistic end.")
 
 
-f = open("lang_data_train_preprocessed.pkl", "rb")
-lang = pickle.load(f)
-print(lang.n_words)
+
+
+
+if __name__=="__main__":
+    # 生成训练数据集
+    data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
+    acc_desc = get_acc_desc("accusation_description.json")
+    print("start processing data......")
+    getData(data_path, acc_desc)
+    print("data processing end.")
+
+    # 统计训练集语料库生成对象
+    lang_name = "2018_CAIL_SMALL_TRAIN"
+    getLang(lang_name)
+    f = open("lang_data_train_preprocessed.pkl", "rb")
+    lang = pickle.load(f)
+    print(lang.n_words)
+
 
 
 

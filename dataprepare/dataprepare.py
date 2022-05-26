@@ -3,10 +3,32 @@ import os
 import pickle
 import re
 import json
-import jieba
 import thulac
-import utils.commonUtils as utils
-from string import punctuation
+
+class Lang:
+    # 语料库对象
+    def __init__(self, name):
+        self.name = name
+        self.word2index = {}
+        self.word2count = {}
+        self.index2word = {0:"SOS", 1:"EOS", 2:"UNK"}
+        # 词汇表大小
+        self.n_words = 3
+
+    def addSentence(self, sentence):
+        for word in sentence:
+            self.addWord(word)
+
+    def addWord(self, word):
+        if word not in self.word2index:
+            self.word2index[word] = self.n_words
+            self.word2count[word] = 1
+            self.index2word[self.n_words] = word
+            self.n_words += 1
+        else:
+            self.word2count[word] += 1
+
+
 
 
 BATH_DATA_PATH = "..\dataset\CAIL-SMALL"
@@ -19,36 +41,6 @@ def get_filter_symbols(filepath):
     :return:list
     '''
     return list(set([line.strip() for line in open(filepath, 'r', encoding='utf-8').readlines()]))
-
-# 大写数字转阿拉伯数字
-def hanzi_to_num(hanzi_1):
-    # for num<10000
-    hanzi = hanzi_1.strip().replace('零', '')
-    if hanzi == '':
-        return str(int(0))
-    d = {'一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '': 0}
-    m = {'十': 1e1, '百': 1e2, '千': 1e3, }
-    w = {'万': 1e4, '亿': 1e8}
-    res = 0
-    tmp = 0
-    thou = 0
-    for i in hanzi:
-        if i not in d.keys() and i not in m.keys() and i not in w.keys():
-            return hanzi
-
-    if (hanzi[0]) == '十': hanzi = '一' + hanzi
-    for i in range(len(hanzi)):
-        if hanzi[i] in d:
-            tmp += d[hanzi[i]]
-        elif hanzi[i] in m:
-            tmp *= m[hanzi[i]]
-            res += tmp
-            tmp = 0
-        else:
-            thou += (res + tmp) * w[hanzi[i]]
-            tmp = 0
-            res = 0
-    return int(thou + res + tmp)
 
 # law内容过滤
 def filterStr(law):
@@ -64,26 +56,6 @@ def filterStr(law):
         law = law[head_content_span[1]:]
 
     return law
-
-# 获取分词器
-def get_cutter(dict_path="Thuocl_seg.txt", mode='thulac', stop_words_filtered=False):
-    '''
-    获取分词器
-    :param dict_path: jieba、thulac使用的用户字典
-    :param mode: 分词工具选择
-    :param stop_words_filtered: 停用词过滤
-    :return:
-    '''
-    if stop_words_filtered:
-        stopwords = get_filter_symbols('stop_word.txt', mode="stop")  # 这里加载停用词的路径
-    else:
-        stopwords = []
-    if mode == 'jieba':
-        jieba.load_userdict(dict_path)
-        return lambda x: [a for a in list(jieba.cut(x)) if a not in stopwords]
-    elif mode == 'thulac':
-        thu = thulac.thulac(user_dict=dict_path, seg_only=True)
-        return lambda x: [a for a in thu.cut(x, text=True).split(' ') if a not in stopwords]
 
 # 生成acc2desc字典
 def get_acc_desc(file_path):
@@ -122,7 +94,7 @@ def getData(case_path, acc2desc):
         for line in f:
             item = [] # 单条训练数据
             example = json.loads(line)
-            # 删除
+            # 过滤law article内容
             example_fact = filterStr(example["fact"])
             # 分词,去除特殊符号
             example_fact_1 = [word for word in thu.cut(example_fact, text=True).split(" ") if word not in special_symbols]
@@ -135,15 +107,29 @@ def getData(case_path, acc2desc):
             facts = [example_fact_1, example_fact_2, example_fact_3, example_fact_4]
             item.append(facts)
             item.append(example['meta']['accusation'][0])
-            item.append(acc2desc[example['meta']['accusation'][0]])
+            # 指控描述
+            acc_desc = acc2desc[example['meta']['accusation'][0]]
+            # 指控描述分词，去除标点、停用词
+            acc_desc = [word for word in thu.cut(acc_desc, text=True).split(" ")
+                        if word not in stopwords and word not in punctuations]
+            item.append(acc_desc)
             items.append(item)
     return items
 
+# 生成训练数据集
 data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
 acc_desc = get_acc_desc("accusation_description.json")
-print(acc_desc["故意伤害"])
-getData(data_path, acc_desc)
+items = getData(data_path, acc_desc)
+# 统计训练集语料库生成对象
+lang = Lang("2018_CAIL_SMALL_TRAIN")
+for i in items:
+    descs = i[2]
+    lang.addSentence(descs)
+    facts = i[0]
+    for fact in facts:
+        lang.addSentence(fact)
 
+print(lang.n_words)
 
 
 # f = open("train_filtered_accusation2num.pkl","rb")

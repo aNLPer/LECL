@@ -143,7 +143,8 @@ def getLang(lang_name):
     f.close()
     print("train data statistic end.")
 
-
+def word2Index(file_path, lang):
+    fi = open(file_path, "r", encoding="utf-8")
 
 
 
@@ -161,6 +162,9 @@ if __name__=="__main__":
     f = open("lang_data_train_preprocessed.pkl", "rb")
     lang = pickle.load(f)
     print(lang.n_words)
+
+    # 将数据集中的word转换为index
+
 
 
 

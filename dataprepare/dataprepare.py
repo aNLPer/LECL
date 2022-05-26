@@ -5,6 +5,8 @@ import re
 import json
 import thulac
 
+BATH_DATA_PATH = "..\dataset\CAIL-SMALL"
+
 class Lang:
     # 语料库对象
     def __init__(self, name):
@@ -27,11 +29,6 @@ class Lang:
             self.n_words += 1
         else:
             self.word2count[word] += 1
-
-
-
-
-BATH_DATA_PATH = "..\dataset\CAIL-SMALL"
 
 # 加载停用词表、特殊符号表、标点
 def get_filter_symbols(filepath):
@@ -89,9 +86,11 @@ def getData(case_path, acc2desc):
     stopwords = get_filter_symbols("stop_word.txt")
     # 加载标点
     punctuations = get_filter_symbols("punctuation.txt")
-    items = []
+    fw = open("..\dataset\CAIL-SMALL\data_train_preprocessed.txt", "w", encoding="utf-8")
+    count = 0
     with open(case_path, "r", encoding="utf-8") as f:
         for line in f:
+            count += 1
             item = [] # 单条训练数据
             example = json.loads(line)
             # 过滤law article内容
@@ -113,39 +112,49 @@ def getData(case_path, acc2desc):
             acc_desc = [word for word in thu.cut(acc_desc, text=True).split(" ")
                         if word not in stopwords and word not in punctuations]
             item.append(acc_desc)
-            items.append(item)
-            if len(items)>=5000:
-                print(f"已处理{len(items)}条数据" )
-    return items
+            list_str = json.dumps(item)
+            fw.write(list_str)
+            if count%5000==0:
+                print(f"已有{count}条数据被处理")
+    fw.close()
+
 
 # 生成训练数据集
 data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
 acc_desc = get_acc_desc("accusation_description.json")
-items = getData(data_path, acc_desc)
+print("start processing data......")
+getData(data_path, acc_desc)
+print("data processing end.")
+
 # 统计训练集语料库生成对象
+print("start statistic train data......")
 lang = Lang("2018_CAIL_SMALL_TRAIN")
-for i in items:
+fr = open("..\dataset\CAIL-SMALL\data_train_preprocessed.txt", "r", encoding="utf-8")
+count = 0
+for line in fr:
+    count+=1
+    i = json.loads(line)
     descs = i[2]
     lang.addSentence(descs)
     facts = i[0]
     for fact in facts:
         lang.addSentence(fact)
+    if count%5000:
+        print(f"已统计{5000}条数据")
+fr.close()
+# 序列化lang
+f = open("lang_data_train_preprocessed.pkl", "wb")
+pickle.dump(lang,f)
+f.close()
+print("train data statistic end.")
 
+
+f = open("lang_data_train_preprocessed.pkl", "rb")
+lang = pickle.load(f)
 print(lang.n_words)
 
 
-# f = open("train_filtered_accusation2num.pkl","rb")
-# dict_accusation = pickle.load(f)
-# f.close()
-#
-# f = open("train_filtered_articles2num.pkl", "rb")
-# dict_article = pickle.load(f)
-# f.close()
-#
-# f = open("train_accusation2num.pkl", "rb")
-# d = pickle.load(f)
-# print(d["盗窃"])
-#
-# print(len(dict_accusation))
-# print(len(dict_article))
-# print(utils.sum_dict(dict_article), utils.sum_dict(dict_accusation))
+
+
+
+

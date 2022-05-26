@@ -114,6 +114,8 @@ def getData(case_path, acc2desc):
                         if word not in stopwords and word not in punctuations]
             item.append(acc_desc)
             items.append(item)
+            if len(items)>=5000:
+                print(f"已处理{len(items)}条数据" )
     return items
 
 # 生成训练数据集

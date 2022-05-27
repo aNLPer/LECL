@@ -134,8 +134,8 @@ def getLang(lang_name):
         facts = i[0]
         for fact in facts:
             lang.addSentence(fact)
-        if count % 5000:
-            print(f"已统计{5000}条数据")
+        if count % 5000==0:
+            print(f"已统计{count}条数据")
     fr.close()
     # 序列化lang
     f = open("lang_data_train_preprocessed.pkl", "wb")
@@ -147,7 +147,9 @@ def word2Index(file_path, lang):
     # 数据集
     fi = open(file_path, "r", encoding="utf-8")
     fo = open(os.path.join(BATH_DATA_PATH, "data_train_forModel.txt"), "w", encoding="utf-8")
+    count = 0
     for line in fi:
+        count += 1
         # 文本数据
         item = json.loads(line)
         # 将文本妆化成索引
@@ -162,25 +164,30 @@ def word2Index(file_path, lang):
         # 序列化并写入
         item_num_str = json.dumps(item_num, ensure_ascii=False)
         fo.write(item_num_str+"\n")
+        if count%5000==0:
+            print(f"已处理{count}条数据")
     fi.close()
     fo.close()
 
 if __name__=="__main__":
-    # 生成训练数据集
-    data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
-    acc_desc = get_acc_desc("accusation_description.json")
-    print("start processing data......")
-    getData(data_path, acc_desc)
-    print("data processing end.")
+    # # 生成训练数据集
+    # data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
+    # acc_desc = get_acc_desc("accusation_description.json")
+    # print("start processing data......")
+    # getData(data_path, acc_desc)
+    # print("data processing end.")
 
-    # 统计训练集语料库生成对象
-    lang_name = "2018_CAIL_SMALL_TRAIN"
-    getLang(lang_name)
+    # # 统计训练集语料库生成对象
+    # lang_name = "2018_CAIL_SMALL_TRAIN"
+    # getLang(lang_name)
+
+    # 将训练集中的文本转换成对应的索引
+    print("start word to index")
     f = open("lang_data_train_preprocessed.pkl", "rb")
     lang = pickle.load(f)
     f.close()
-    print(lang.n_words)
-
+    word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
+    print("processing end")
     # 将数据集中的word转换为index
 
 

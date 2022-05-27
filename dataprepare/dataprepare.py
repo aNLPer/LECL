@@ -42,11 +42,11 @@ def get_filter_symbols(filepath):
 # law内容过滤
 def filterStr(law):
     # 删除括号及括号内的内容
-    pattern_bracket = re.compile(r"[(（].*?[）)]")
+    pattern_bracket = re.compile(r"[<《【\[(（〔].*?[〕）)\]】》>]")
     law = pattern_bracket.sub("",law)
 
     # 删除第一个标点之前的内容
-    pattern_head_content = re.compile(r".*?[，：,:]")
+    pattern_head_content = re.compile(r".*?[，：。,:.]")
     head_content = pattern_head_content.match(law)
     if head_content is not None:
         head_content_span = head_content.span()
@@ -169,47 +169,52 @@ def word2Index(file_path, lang):
     fi.close()
     fo.close()
 
-if __name__=="__main__":
-    # # 生成训练数据集
-    # data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
-    # acc_desc = get_acc_desc("accusation_description.json")
-    # print("start processing data......")
-    # getData(data_path, acc_desc)
-    # print("data processing end.")
-
-    # # 统计训练集语料库生成对象
-    # lang_name = "2018_CAIL_SMALL_TRAIN"
-    # getLang(lang_name)
-
-    # # 将训练集中的文本转换成对应的索引
-    # print("start word to index")
-    # f = open("lang_data_train_preprocessed.pkl", "rb")
-    # lang = pickle.load(f)
-    # f.close()
-    # word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
-    # print("processing end")
-
-    # 统计最长文本
-    print("start statistic length of sample......")
+# 统计文本长度
+def sample_length(path):
     max_length = 0
     max_length_sample = 0
     min_length = float("inf")
     min_length_sample = 0
-    f = open(os.path.join(BATH_DATA_PATH, "data_train_forModel.txt"), "r", encoding="utf-8")
+    f = open(path, "r", encoding="utf-8")
     count = 0
     for line in f:
         count += 1
         sample = json.loads(line)
-        if len(sample[0][0])>max_length:
+        if len(sample[0][0]) > max_length:
             max_length = len(sample[0][0])
             max_length_sample = count
-        if len(sample[0][0])<min_length:
+        if len(sample[0][0]) < min_length:
             min_length = len(sample[0][0])
             min_length_sample = count
     f.close()
     print(f"min_length: {min_length} at line {min_length_sample}")
     print((f"max_length: {max_length} at line {max_length_sample}"))
 
+if __name__=="__main__":
+    # 生成训练数据集
+    data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
+    acc_desc = get_acc_desc("accusation_description.json")
+    print("start processing data......")
+    getData(data_path, acc_desc)
+    print("data processing end.")
+
+    # 统计训练集语料库生成对象
+    lang_name = "2018_CAIL_SMALL_TRAIN"
+    getLang(lang_name)
+
+    # 将训练集中的文本转换成对应的索引
+    print("start word to index")
+    f = open("lang_data_train_preprocessed.pkl", "rb")
+    lang = pickle.load(f)
+    f.close()
+    word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
+    print("processing end")
+
+    # 统计最长文本
+    print("start statistic length of sample......")
+    path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
+    sample_length(path)
+    print("statistic length of sample end.")
 
 
 

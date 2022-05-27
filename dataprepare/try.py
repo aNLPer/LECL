@@ -16,7 +16,7 @@ def filterStr(law):
     law = pattern_bracket.sub("",law)
 
     # 删除第一个标点之前的内容
-    pattern_head_content = re.compile(r".*?[，：,:]")
+    pattern_head_content = re.compile(r".*?[，：。,:.]")
     head_content = pattern_head_content.match(law)
     if head_content is not None:
         head_content_span = head_content.span()
@@ -24,7 +24,7 @@ def filterStr(law):
 
     return law
 
-example_fact = "经审理查明,原审被告人保某受杨某（另案）邀约驾驶其云Ｄ×××××货车非法运输烟叶的事实清楚。有经一审庭审质证、认证的刑事案件登记表、查获经过、扣押物品清单、价格鉴定书、证人证言、被告人保某的供述等证据予以证实，本院予以确认。"
+example_fact = "经审理查明.原审被告人保某受杨某（另案）邀约驾驶其云Ｄ×××××货车非法运输烟叶的事实清楚。有经一审庭审质证、认证的刑事案件登记表、查获经过、扣押物品清单、价格鉴定书、证人证言、被告人保某的供述等证据予以证实，本院予以确认。"
 
 # 加载分词器
 thu = thulac.thulac(user_dict="Thuocl_seg.txt", seg_only=True)

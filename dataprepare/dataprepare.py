@@ -46,7 +46,7 @@ def filterStr(law):
     law = pattern_bracket.sub("",law)
 
     # 删除第一个标点之前的内容
-    pattern_head_content = re.compile(r".*?[，：]")
+    pattern_head_content = re.compile(r".*?[，：,:]")
     head_content = pattern_head_content.match(law)
     if head_content is not None:
         head_content_span = head_content.span()

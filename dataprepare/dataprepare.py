@@ -4,7 +4,7 @@ import pickle
 import re
 import json
 import thulac
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 
 BATH_DATA_PATH = "..\dataset\CAIL-SMALL"
@@ -192,6 +192,7 @@ def sample_length(path):
         if length < min_length:
             min_length = len(sample[0][0])
             min_length_sample = count["all"]
+        # 长度范围统计
         if length>=5000:
             count["5000-"] += 1
         else:
@@ -220,6 +221,21 @@ def sample_length(path):
     f.close()
     return min_length, min_length_sample, max_length,max_length_sample, count
 
+# 按照指控类别统计案件分布
+def sample_categories_dis(file_path):
+    f = open(file_path, "r", encoding="utf-8")
+    acc_dict = {}
+    for line in f:
+        sample = json.loads(line)
+        sample_acc = sample[1]
+        if sample_acc not in acc_dict:
+            acc_dict[sample_acc] = 1
+        else:
+            acc_dict[sample_acc] += 1
+    f.close()
+    return acc_dict
+
+
 if __name__=="__main__":
     # # 生成训练数据集
     # data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
@@ -240,18 +256,25 @@ if __name__=="__main__":
     # word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
     # print("processing end")
 
-    # 统计最长文本
-    print("start statistic length of sample......")
-    path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
-    min_length,min_length_sample, max_length, max_length_sample, count = sample_length(path)
-    print(f"min_length: {min_length} at line {min_length_sample}")
-    print((f"max_length: {max_length} at line {max_length_sample}"))
-    data = np.array(list(count.values()))
-    print(data)
-    plt.figure(figsize=(20,8),dpi=80)
-    plt.hist(data[1:],bins=9, edgecolor='k')
-    plt.show()
-    print("statistic length of sample end.")
+    # # 统计最长文本
+    # print("start statistic length of sample......")
+    # path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
+    # min_length,min_length_sample, max_length, max_length_sample, count = sample_length(path)
+    # print(f"min_length: {min_length} at line {min_length_sample}")
+    # print((f"max_length: {max_length} at line {max_length_sample}"))
+    # data = np.array(list(count.values()))
+    # print(data)
+    # plt.figure(figsize=(20,8),dpi=80)
+    # plt.hist(data[1:],bins=9, edgecolor='k')
+    # plt.show()
+    # print("statistic length of sample end.")
+
+    # 统计案件类别分布
+    file_path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
+    sample_dis = sample_categories_dis()
+    f = open("sample_category_dis.pkl", "wb")
+    pickle.dumps(sample_dis)
+    f.close()
 
 
 

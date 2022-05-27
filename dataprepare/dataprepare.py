@@ -6,6 +6,7 @@ import json
 import thulac
 # import matplotlib.pyplot as plt
 import numpy as np
+import operator
 
 BATH_DATA_PATH = "..\dataset\CAIL-SMALL"
 
@@ -269,11 +270,16 @@ if __name__=="__main__":
     # plt.show()
     # print("statistic length of sample end.")
 
-    # 统计案件类别分布
-    file_path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
-    sample_dis = sample_categories_dis()
-    f = open("sample_category_dis.pkl", "wb")
-    pickle.dumps(sample_dis)
+    # # 统计案件类别分布
+    # file_path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
+    # sample_dis = sample_categories_dis(file_path)
+    # f = open("sample_category_dis.pkl", "wb")
+    # pickle.dump(sample_dis,f)
+    # f.close()
+
+    f = open("sample_category_dis.pkl", "rb")
+    sample_dis = pickle.load(f)
+    sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
     f.close()
 
 

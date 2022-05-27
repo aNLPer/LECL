@@ -4,6 +4,8 @@ import pickle
 import re
 import json
 import thulac
+import matplotlib.pyplot as plt
+import numpy as np
 
 BATH_DATA_PATH = "..\dataset\CAIL-SMALL"
 
@@ -176,44 +178,79 @@ def sample_length(path):
     min_length = float("inf")
     min_length_sample = 0
     f = open(path, "r", encoding="utf-8")
-    count = 0
+    # all, 0-20, 20-50, 50-100, 100-200, 200-500, 500-1000, 1000-2000, 2000-5000, 5000-
+    count = {"all":0, "0-20":0, "20-50":0,"50-100":0,"100-200":0,
+             "200-500":0,"500-1000":0,"1000-2000":0,"2000-5000":0,
+             "5000-":0}
     for line in f:
-        count += 1
+        count["all"] += 1
         sample = json.loads(line)
-        if len(sample[0][0]) > max_length:
+        length = len(sample[0][0])
+        if length > max_length:
             max_length = len(sample[0][0])
-            max_length_sample = count
-        if len(sample[0][0]) < min_length:
+            max_length_sample = count["all"]
+        if length < min_length:
             min_length = len(sample[0][0])
-            min_length_sample = count
+            min_length_sample = count["all"]
+        if length>=5000:
+            count["5000-"] += 1
+        else:
+            if length>=200: # 200-5000
+                if length>=1000: # 1000-5000
+                    if length>=2000:
+                        count["2000-5000"]+=1
+                    else:
+                        count["1000-2000"]+=1
+                else: # 200-1000
+                    if length>=500:
+                        count["500-1000"]+=1
+                    else:
+                        count["200-500"]+=1
+            else: # 0-200
+                if length>=50: # 50-200
+                    if length>=100:
+                        count["100-200"]+=1
+                    else:
+                        count["50-100"]+=1
+                else:
+                    if length>=20:
+                        count["20-50"]+=1
+                    else:
+                        count["0-20"]+=1
     f.close()
-    print(f"min_length: {min_length} at line {min_length_sample}")
-    print((f"max_length: {max_length} at line {max_length_sample}"))
+    return min_length, min_length_sample, max_length,max_length_sample, count
 
 if __name__=="__main__":
-    # 生成训练数据集
-    data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
-    acc_desc = get_acc_desc("accusation_description.json")
-    print("start processing data......")
-    getData(data_path, acc_desc)
-    print("data processing end.")
+    # # 生成训练数据集
+    # data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
+    # acc_desc = get_acc_desc("accusation_description.json")
+    # print("start processing data......")
+    # getData(data_path, acc_desc)
+    # print("data processing end.")
 
-    # 统计训练集语料库生成对象
-    lang_name = "2018_CAIL_SMALL_TRAIN"
-    getLang(lang_name)
+    # # 统计训练集语料库生成对象
+    # lang_name = "2018_CAIL_SMALL_TRAIN"
+    # getLang(lang_name)
 
-    # 将训练集中的文本转换成对应的索引
-    print("start word to index")
-    f = open("lang_data_train_preprocessed.pkl", "rb")
-    lang = pickle.load(f)
-    f.close()
-    word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
-    print("processing end")
+    # # 将训练集中的文本转换成对应的索引
+    # print("start word to index")
+    # f = open("lang_data_train_preprocessed.pkl", "rb")
+    # lang = pickle.load(f)
+    # f.close()
+    # word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
+    # print("processing end")
 
     # 统计最长文本
     print("start statistic length of sample......")
     path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
-    sample_length(path)
+    min_length,min_length_sample, max_length, max_length_sample, count = sample_length(path)
+    print(f"min_length: {min_length} at line {min_length_sample}")
+    print((f"max_length: {max_length} at line {max_length_sample}"))
+    data = np.array(list(count.values()))
+    print(data)
+    plt.figure(figsize=(20,8),dpi=80)
+    plt.hist(data[1:],bins=9, edgecolor='k')
+    plt.show()
     print("statistic length of sample end.")
 
 

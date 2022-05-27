@@ -181,14 +181,35 @@ if __name__=="__main__":
     # lang_name = "2018_CAIL_SMALL_TRAIN"
     # getLang(lang_name)
 
-    # 将训练集中的文本转换成对应的索引
-    print("start word to index")
-    f = open("lang_data_train_preprocessed.pkl", "rb")
-    lang = pickle.load(f)
+    # # 将训练集中的文本转换成对应的索引
+    # print("start word to index")
+    # f = open("lang_data_train_preprocessed.pkl", "rb")
+    # lang = pickle.load(f)
+    # f.close()
+    # word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
+    # print("processing end")
+
+    # 统计最长文本
+    print("start statistic length of sample......")
+    max_length = 0
+    max_length_sample = 0
+    min_length = float("inf")
+    min_length_sample = 0
+    f = open(os.path.join(BATH_DATA_PATH, "data_train_forModel.txt"), "r", encoding="utf-8")
+    count = 0
+    for line in f:
+        count += 1
+        sample = json.loads(line)
+        if len(sample[0][0])>max_length:
+            max_length = len(sample[0][0])
+            max_length_sample = count
+        if len(sample[0][0])<min_length:
+            min_length = len(sample[0][0])
+            min_length_sample = count
     f.close()
-    word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
-    print("processing end")
-    # 将数据集中的word转换为index
+    print(f"min_length: {min_length} at line {min_length_sample}")
+    print((f"max_length: {max_length} at line {max_length_sample}"))
+
 
 
 

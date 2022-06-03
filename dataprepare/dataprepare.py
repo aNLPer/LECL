@@ -236,6 +236,21 @@ def sample_categories_dis(file_path):
     f.close()
     return acc_dict
 
+def load_accusation_classified(file_path):
+    f = open(file_path, "r", encoding="utf-8")
+    category2accus = {}
+    # category to accusations
+    for line in f:
+        line = line.strip()
+        item = line.split(" ")
+        category2accus[item[0]] = item[1:]
+    f.close()
+    accu2category = {}
+    for k, vs in category2accus.items():
+        for v in vs:
+            accu2category[v] = k
+    return category2accus, accu2category
+
 
 if __name__=="__main__":
     # # 生成训练数据集
@@ -277,10 +292,13 @@ if __name__=="__main__":
     # pickle.dump(sample_dis,f)
     # f.close()
 
-    f = open("sample_category_dis.pkl", "rb")
-    sample_dis = pickle.load(f)
-    sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
-    f.close()
+    # f = open("sample_category_dis.pkl", "rb")
+    # sample_dis = pickle.load(f)
+    # sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
+    # f.close()
+    file_path = "accusation_classified_v1.1.txt"
+    dict1, dict2 = load_accusation_classified(file_path)
+    print(dict1, dict2)
 
 
 

@@ -68,7 +68,7 @@ def get_acc_desc(file_path):
     return acc2des
 
 # 构造数据集
-def getData(case_path, acc2desc, acc2id):
+def getData(case_path, acc2desc):
     '''
     构造数据集：[[case_desc,case_desc,...], "acc", "acc_desc"]
     # 分词
@@ -110,9 +110,10 @@ def getData(case_path, acc2desc, acc2id):
             # 去除停用词和标点
             example_fact_4 = [word for word in example_fact_3 if word not in stopwords]
             # facts = [example_fact_3, example_fact_4]
+            item.append(example_fact_2)
             item.append(example_fact_3)
             item.append(example_fact_4)
-            item.append(acc2id[example['meta']['accusation'][0].strip()])
+            item.append(example['meta']['accusation'][0].strip())
             # 指控描述
             acc_desc = acc2desc[example['meta']['accusation'][0]]
             # 指控描述分词，去除标点、停用词
@@ -135,9 +136,9 @@ def getLang(lang_name):
             continue
         count += 1
         i = json.loads(line)
-        descs = i[2]
+        descs = i[4]
         lang.addSentence(descs)
-        facts = i[0]
+        facts = i[0:3]
         for fact in facts:
             lang.addSentence(fact)
         if count % 5000==0:
@@ -149,7 +150,7 @@ def getLang(lang_name):
     f.close()
     print("train data statistic end.")
 
-def word2Index(file_path, lang):
+def word2Index(file_path, lang, acc2id):
     # 数据集
     fi = open(file_path, "r", encoding="utf-8")
     fo = open(os.path.join(BATH_DATA_PATH, "data_train_forModel.txt"), "w", encoding="utf-8")
@@ -162,11 +163,13 @@ def word2Index(file_path, lang):
         item_num = []
 
         fact_num = []
-        for fact in item[0]:
+        for fact in item[0:3]:
             fact_num.append([lang.word2index[word] for word in fact])
-        item_num.append(fact_num)
-        item_num.append(item[1])
-        item_num.append([lang.word2index[word] for word in item[2]])
+        item_num.append(fact_num[0])
+        item_num.append(fact_num[1])
+        item_num.append(fact_num[2])
+        item_num.append(acc2id[item[3].strip()])
+        item_num.append([lang.word2index[word] for word in item[4]])
         # 序列化并写入
         item_num_str = json.dumps(item_num, ensure_ascii=False)
         fo.write(item_num_str+"\n")
@@ -281,7 +284,7 @@ if __name__=="__main__":
     acc_desc = get_acc_desc("accusation_description.json")
     id2acc, acc2id = getAccus(data_path)
     print("start processing data...")
-    getData(data_path, acc_desc, acc2id)
+    getData(data_path, acc_desc)
     print("data processing end.")
 
     # 统计训练集语料库生成对象

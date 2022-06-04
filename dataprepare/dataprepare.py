@@ -249,6 +249,7 @@ def load_accusation_classified(file_path):
     for k, vs in category2accus.items():
         for v in vs:
             accu2category[v] = k
+
     return category2accus, accu2category
 
 
@@ -299,7 +300,7 @@ if __name__=="__main__":
     file_path = "accusation_classified_v1.1.txt"
     dict1, dict2 = load_accusation_classified(file_path)
     print(dict1, dict2)
-
+    print(len(dict2))
 
 
 

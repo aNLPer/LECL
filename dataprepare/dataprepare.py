@@ -282,7 +282,6 @@ if __name__=="__main__":
     # 生成训练数据集
     data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
     acc_desc = get_acc_desc("accusation_description.json")
-    id2acc, acc2id = getAccus(data_path)
     print("start processing data...")
     getData(data_path, acc_desc)
     print("data processing end.")
@@ -293,10 +292,11 @@ if __name__=="__main__":
 
     # 将训练集中的文本转换成对应的索引
     print("start word to index")
+    id2acc, acc2id = getAccus(data_path)
     f = open("lang_data_train_preprocessed.pkl", "rb")
     lang = pickle.load(f)
     f.close()
-    word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
+    word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang, acc2id)
     print("processing end")
 
     # # 统计最长文本

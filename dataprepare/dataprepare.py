@@ -68,7 +68,7 @@ def get_acc_desc(file_path):
     return acc2des
 
 # 构造数据集
-def getData(case_path, acc2desc):
+def getData(case_path, acc2desc, acc2id):
     '''
     构造数据集：[[case_desc,case_desc,...], "acc", "acc_desc"]
     # 分词
@@ -101,15 +101,18 @@ def getData(case_path, acc2desc):
             # 分词,去除特殊符号
             example_fact_1 = [word for word in thu.cut(example_fact, text=True).split(" ") if word not in special_symbols]
             example_fact_1 = [re.sub(r"\d+","x", word) for word in example_fact_1]
+            example_fact_1 = [word for word in example_fact_1
+                              if word not in ["x年", "x月", "x日", "下午", "上午", "凌晨", "晚", "晚上", "x时", "x分", "许"]]
             # 去除停用词
             example_fact_2 = [word for word in example_fact_1 if word not in stopwords]
             # 去除标点
             example_fact_3 = [word for word in example_fact_1 if word not in punctuations]
             # 去除停用词和标点
             example_fact_4 = [word for word in example_fact_3 if word not in stopwords]
-            facts = [example_fact_1, example_fact_2, example_fact_3, example_fact_4]
-            item.append(facts)
-            item.append(example['meta']['accusation'][0])
+            # facts = [example_fact_3, example_fact_4]
+            item.append(example_fact_3)
+            item.append(example_fact_4)
+            item.append(acc2id[example['meta']['accusation'][0].strip()])
             # 指控描述
             acc_desc = acc2desc[example['meta']['accusation'][0]]
             # 指控描述分词，去除标点、停用词
@@ -171,6 +174,25 @@ def word2Index(file_path, lang):
             print(f"已处理{count}条数据")
     fi.close()
     fo.close()
+
+# 统计训练数据中的指控
+def getAccus(filename):
+    """
+    统计训练数据中的指控返回acc2id，id2指控
+    :param filename:
+    :return:
+    """
+    id2acc = []
+    acc2id = {}
+    with open(filename, "r", encoding="utf-8") as f:
+        for line in f:
+            example = json.loads(line)
+            acc = example["meta"]["accusation"][0]
+            if acc not in id2acc:
+                id2acc.append(acc)
+            for idx, acc in enumerate(id2acc):
+                acc2id[acc] = idx
+    return id2acc, acc2id
 
 # 统计文本长度
 def sample_length(path):
@@ -254,24 +276,25 @@ def load_accusation_classified(file_path):
 
 
 if __name__=="__main__":
-    # # 生成训练数据集
-    # data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
-    # acc_desc = get_acc_desc("accusation_description.json")
-    # print("start processing data......")
-    # getData(data_path, acc_desc)
-    # print("data processing end.")
+    # 生成训练数据集
+    data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
+    acc_desc = get_acc_desc("accusation_description.json")
+    id2acc, acc2id = getAccus(data_path)
+    print("start processing data...")
+    getData(data_path, acc_desc, acc2id)
+    print("data processing end.")
 
-    # # 统计训练集语料库生成对象
-    # lang_name = "2018_CAIL_SMALL_TRAIN"
-    # getLang(lang_name)
+    # 统计训练集语料库生成对象
+    lang_name = "2018_CAIL_SMALL_TRAIN"
+    getLang(lang_name)
 
-    # # 将训练集中的文本转换成对应的索引
-    # print("start word to index")
-    # f = open("lang_data_train_preprocessed.pkl", "rb")
-    # lang = pickle.load(f)
-    # f.close()
-    # word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
-    # print("processing end")
+    # 将训练集中的文本转换成对应的索引
+    print("start word to index")
+    f = open("lang_data_train_preprocessed.pkl", "rb")
+    lang = pickle.load(f)
+    f.close()
+    word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang)
+    print("processing end")
 
     # # 统计最长文本
     # print("start statistic length of sample......")
@@ -297,10 +320,11 @@ if __name__=="__main__":
     # sample_dis = pickle.load(f)
     # sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
     # f.close()
-    file_path = "accusation_classified_v1.1.txt"
-    dict1, dict2 = load_accusation_classified(file_path)
-    print(dict1, dict2)
-    print(len(dict2))
+    d1, d2 = getAccus(os.path.join(BATH_DATA_PATH,"data_train_filtered.json"))
+    print(len(d1))
+
+
+
 
 
 

@@ -6,6 +6,7 @@ from torch.utils.data import Dataset, DataLoader
 seq_tensor_1 = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]
 seq_tensor_2 = [[1,2,3],[5,6],[9,10,11],[13,14,15,16,1,1,1]]
 seq_label = [0,1,0,1]
+
 def pad_and_cut(data, length):
     """填充或截二维维numpy到固定的长度"""
     # 将2维ndarray填充和截断到固定长度
@@ -13,7 +14,7 @@ def pad_and_cut(data, length):
     for i in range(n):
         if len(data[i]) < length:
             # 进行填充
-            data[i] = np.pad(data[i], pad_width=(0,length-len(data[i])), constant_values=2)
+            data[i] = np.pad(data[i], pad_width=(0,length-len(data[i])), constant_values=0)
         if len(data[i]) > length:
             # 进行截断
             data[i] = data[i][:length]

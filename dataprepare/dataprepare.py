@@ -331,8 +331,6 @@ if __name__=="__main__":
     # d1, d2 = getAccus(os.path.join(BATH_DATA_PATH,"data_train_filtered.json"))
     # print(len(d1))
 
-    seq_1, seq_2, seq_3, label, label_desc = prepareData("data_train_forModel.txt")
-    print("got data")
 
 
 

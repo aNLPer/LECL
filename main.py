@@ -62,8 +62,6 @@ class myDataset(Dataset):
     def __len__(self):
         return len(self.seq_1)
 
-
-
 seq_1, seq_2, seq_3, label_desc, label = prepareData()
 seq_1_tensor = torch.from_numpy(pad_and_cut(seq_1, SEQ_MAX_LENGTH)).long()
 seq_2_tensor = torch.from_numpy(pad_and_cut(seq_2, SEQ_MAX_LENGTH)).long()

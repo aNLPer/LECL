@@ -3,7 +3,7 @@ import numpy as np
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 
-seq_tensor_1 = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]
+seq_tensor_1 = [[1,2,3,4],[5,6,7,8],[9,10,11,12]]
 seq_tensor_2 = [[1,2,3],[5,6],[9,10,11],[13,14,15,16,1,1,1]]
 seq_label = [0,1,0,1]
 
@@ -22,7 +22,11 @@ def pad_and_cut(data, length):
     new_data = np.array(data.tolist())
     return new_data
 
-print(pad_and_cut(np.array(seq_tensor_2),5))
+# seq = torch.tensor(pad_and_cut(np.array(seq_tensor_2),5)).float()
+seq = torch.tensor(seq_tensor_1)
+seq = torch.transpose(seq, dim0=0, dim1=1)
+print(seq)
+
 
 
 

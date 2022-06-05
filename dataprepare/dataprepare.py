@@ -16,7 +16,7 @@ class Lang:
         self.name = name
         self.word2index = {}
         self.word2count = {}
-        self.index2word = {0:"SOS", 1:"EOS", 2:"UNK"}
+        self.index2word = {0:"UNK", 1:"SOS", 2:"EOS"}
         # 词汇表大小
         self.n_words = 3
 
@@ -178,7 +178,7 @@ def word2Index(file_path, lang, acc2id):
     fi.close()
     fo.close()
 
-# 统计训练数据中的指控
+# 获取指控-索引 及 索引-指控
 def getAccus(filename):
     """
     统计训练数据中的指控返回acc2id，id2指控
@@ -211,12 +211,12 @@ def sample_length(path):
     for line in f:
         count["all"] += 1
         sample = json.loads(line)
-        length = len(sample[0][0])
+        length = max(len(sample[0]), len(sample[1]))
         if length > max_length:
-            max_length = len(sample[0][0])
+            max_length = length
             max_length_sample = count["all"]
         if length < min_length:
-            min_length = len(sample[0][0])
+            min_length = length
             min_length_sample = count["all"]
         # 长度范围统计
         if length>=5000:
@@ -253,7 +253,7 @@ def sample_categories_dis(file_path):
     acc_dict = {}
     for line in f:
         sample = json.loads(line)
-        sample_acc = sample[1]
+        sample_acc = sample[3]
         if sample_acc not in acc_dict:
             acc_dict[sample_acc] = 1
         else:
@@ -278,6 +278,11 @@ def load_accusation_classified(file_path):
     return category2accus, accu2category
 
 
+
+
+
+
+
 if __name__=="__main__":
     # 生成训练数据集
     data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
@@ -299,32 +304,38 @@ if __name__=="__main__":
     word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang, acc2id)
     print("processing end")
 
-    # # 统计最长文本
-    # print("start statistic length of sample......")
-    # path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
-    # min_length,min_length_sample, max_length, max_length_sample, count = sample_length(path)
-    # print(f"min_length: {min_length} at line {min_length_sample}")
-    # print((f"max_length: {max_length} at line {max_length_sample}"))
-    # data = np.array(list(count.values()))
-    # print(data)
-    # plt.figure(figsize=(20,8),dpi=80)
-    # plt.hist(data[1:],bins=9, edgecolor='k')
-    # plt.show()
-    # print("statistic length of sample end.")
+    # 统计最长文本
+    print("start statistic length of sample......")
+    path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
+    min_length,min_length_sample, max_length, max_length_sample, count = sample_length(path)
+    print(f"min_length: {min_length} at line {min_length_sample}")
+    print((f"max_length: {max_length} at line {max_length_sample}"))
+    data = np.array(list(count.values()))
+    print(data)
 
-    # # 统计案件类别分布
-    # file_path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
-    # sample_dis = sample_categories_dis(file_path)
-    # f = open("sample_category_dis.pkl", "wb")
-    # pickle.dump(sample_dis,f)
-    # f.close()
 
-    # f = open("sample_category_dis.pkl", "rb")
-    # sample_dis = pickle.load(f)
-    # sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
-    # f.close()
-    d1, d2 = getAccus(os.path.join(BATH_DATA_PATH,"data_train_filtered.json"))
-    print(len(d1))
+    # 统计案件类别分布
+    file_path = os.path.join(BATH_DATA_PATH, "data_train_preprocessed.txt")
+    sample_dis = sample_categories_dis(file_path)
+    f = open("sample_category_dis.pkl", "wb")
+    pickle.dump(sample_dis,f)
+    f.close()
+
+    f = open("sample_category_dis.pkl", "rb")
+    sample_dis = pickle.load(f)
+    sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
+    f.close()
+    print(sample_dis)
+
+    # # 获取指控字典
+    # d1, d2 = getAccus(os.path.join(BATH_DATA_PATH,"data_train_filtered.json"))
+    # print(len(d1))
+
+    seq_1, seq_2, seq_3, label, label_desc = prepareData("data_train_forModel.txt")
+    print("got data")
+
+
+
 
 
 

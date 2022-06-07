@@ -1,3 +1,4 @@
+from models.Encoder import FactEnc, AccuEnc
 import torch
 import numpy as np
 import torch.nn as nn
@@ -26,7 +27,9 @@ def pad_and_cut(data, length):
 seq = torch.tensor(seq_tensor_1)
 seq = torch.transpose(seq, dim0=0, dim1=1)
 print(seq)
-
+factEnc = FactEnc()
+x = factEnc(seq)
+print(x)
 
 
 

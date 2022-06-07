@@ -3,15 +3,18 @@ from dataprepare.dataprepare import Lang
 import torch
 import numpy as np
 import pickle
-from models import Encoder
+from models.Encoder import FactEnc, AccuEnc
 import json
-
 import torch.nn as nn
 
 BATCH_SIZE = 32
 LR_DESC_ENC = 0.0002
 LR_CASE_ENC = 0.001
 SEQ_MAX_LENGTH = 500
+
+f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
+lang = pickle.load(f)
+f.close()
 
 def pad_and_cut(data, length):
     """
@@ -73,16 +76,18 @@ label_desc_tensor = torch.from_numpy(pad_and_cut(label_desc,SEQ_MAX_LENGTH))
 label_tensor = torch.from_numpy(label)
 
 train_data = myDataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_desc_tensor, label_tensor)
-iter_train_data = DataLoader(train_data, batch_size=2,shuffle=True)
+iter_train_data = DataLoader(train_data, batch_size=2, shuffle=True)
+factEnc = FactEnc(lang.n_words, embedding_dim=8)
 for seq_1, seq_2, seq_3, label_desc, label in iter_train_data:
-    print(seq_1)
-    print(torch.transpose(seq_1, dim0=0, dim1=1))
-    print(seq_1)
-    print(seq_2)
-    print(seq_3)
-    print(label_desc)
-    print(label)
+    factEnc(seq_1)
 
+def train():
+    print("train")
 
+def itertrain():
+    print("itertrain")
+
+def evaluate():
+    print("evaluate")
 
 

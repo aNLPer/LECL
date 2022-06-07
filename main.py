@@ -1,8 +1,11 @@
 from torch.utils.data import Dataset, DataLoader
+from dataprepare.dataprepare import Lang
 import torch
 import numpy as np
+import pickle
 from models import Encoder
 import json
+
 import torch.nn as nn
 
 BATCH_SIZE = 32
@@ -63,19 +66,23 @@ class myDataset(Dataset):
         return len(self.seq_1)
 
 seq_1, seq_2, seq_3, label_desc, label = prepareData()
-seq_1_tensor = torch.from_numpy(pad_and_cut(seq_1, SEQ_MAX_LENGTH)).long()
-seq_2_tensor = torch.from_numpy(pad_and_cut(seq_2, SEQ_MAX_LENGTH)).long()
-seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH)).long()
-label_desc_tensor = torch.from_numpy(pad_and_cut(label_desc,SEQ_MAX_LENGTH)).long()
-label_tensor = torch.from_numpy(label).long()
+seq_1_tensor = torch.from_numpy(pad_and_cut(seq_1, SEQ_MAX_LENGTH))
+seq_2_tensor = torch.from_numpy(pad_and_cut(seq_2, SEQ_MAX_LENGTH))
+seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH))
+label_desc_tensor = torch.from_numpy(pad_and_cut(label_desc,SEQ_MAX_LENGTH))
+label_tensor = torch.from_numpy(label)
 
 train_data = myDataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_desc_tensor, label_tensor)
 iter_train_data = DataLoader(train_data, batch_size=2,shuffle=True)
 for seq_1, seq_2, seq_3, label_desc, label in iter_train_data:
     print(seq_1)
+    print(torch.transpose(seq_1, dim0=0, dim1=1))
+    print(seq_1)
     print(seq_2)
     print(seq_3)
     print(label_desc)
     print(label)
+
+
 
 

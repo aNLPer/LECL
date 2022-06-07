@@ -284,48 +284,54 @@ def load_accusation_classified(file_path):
 
 
 if __name__=="__main__":
-    # 生成训练数据集
-    data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
-    acc_desc = get_acc_desc("accusation_description.json")
-    print("start processing data...")
-    getData(data_path, acc_desc)
-    print("data processing end.")
-
-    # 统计训练集语料库生成对象
-    lang_name = "2018_CAIL_SMALL_TRAIN"
-    getLang(lang_name)
-
-    # 将训练集中的文本转换成对应的索引
-    print("start word to index")
-    id2acc, acc2id = getAccus(data_path)
-    f = open("lang_data_train_preprocessed.pkl", "rb")
-    lang = pickle.load(f)
-    f.close()
-    word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang, acc2id)
-    print("processing end")
-
-    # 统计最长文本
-    print("start statistic length of sample......")
-    path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
-    min_length,min_length_sample, max_length, max_length_sample, count = sample_length(path)
-    print(f"min_length: {min_length} at line {min_length_sample}")
-    print((f"max_length: {max_length} at line {max_length_sample}"))
-    data = np.array(list(count.values()))
-    print(data)
-
-
-    # 统计案件类别分布
-    file_path = os.path.join(BATH_DATA_PATH, "data_train_preprocessed.txt")
-    sample_dis = sample_categories_dis(file_path)
-    f = open("sample_category_dis.pkl", "wb")
-    pickle.dump(sample_dis,f)
-    f.close()
+    # # 生成训练数据集
+    # data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
+    # acc_desc = get_acc_desc("accusation_description.json")
+    # print("start processing data...")
+    # getData(data_path, acc_desc)
+    # print("data processing end.")
+    #
+    # # 统计训练集语料库生成对象
+    # lang_name = "2018_CAIL_SMALL_TRAIN"
+    # getLang(lang_name)
+    #
+    # # 将训练集中的文本转换成对应的索引
+    # print("start word to index")
+    # id2acc, acc2id = getAccus(data_path)
+    # f = open("lang_data_train_preprocessed.pkl", "rb")
+    # lang = pickle.load(f)
+    # f.close()
+    # word2Index(os.path.join(BATH_DATA_PATH,"data_train_preprocessed.txt"), lang, acc2id)
+    # print("processing end")
+    #
+    # # 统计最长文本
+    # print("start statistic length of sample......")
+    # path = os.path.join(BATH_DATA_PATH, "data_train_forModel.txt")
+    # min_length,min_length_sample, max_length, max_length_sample, count = sample_length(path)
+    # print(f"min_length: {min_length} at line {min_length_sample}")
+    # print((f"max_length: {max_length} at line {max_length_sample}"))
+    # data = np.array(list(count.values()))
+    # print(data)
+    #
+    #
+    # # 统计案件类别分布
+    # file_path = os.path.join(BATH_DATA_PATH, "data_train_preprocessed.txt")
+    # sample_dis = sample_categories_dis(file_path)
+    # f = open("sample_category_dis.pkl", "wb")
+    # pickle.dump(sample_dis,f)
+    # f.close()
 
     f = open("sample_category_dis.pkl", "rb")
     sample_dis = pickle.load(f)
     sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
     f.close()
     print(sample_dis)
+
+    top_10 = sum(list(sample_dis.values())[0:10])
+    bottom_10 = sum(list(sample_dis.values())[-10:])
+    print(f"top_10:{top_10/sum(sample_dis.values())}")
+    print(f"bottom_20:{bottom_10/sum(sample_dis.values())}")
+
 
     # # 获取指控字典
     # d1, d2 = getAccus(os.path.join(BATH_DATA_PATH,"data_train_filtered.json"))

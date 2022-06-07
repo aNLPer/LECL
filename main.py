@@ -81,7 +81,11 @@ iter_train_data = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 factEnc = FactEnc(lang.n_words, embedding_dim=EMBED_DIM)
 
 for seq_1, seq_2, seq_3, label_desc, label in iter_train_data:
-    factEnc(seq_1)
+    out_1 = factEnc(seq_1)
+    out_2 = factEnc(seq_2)
+    out_3 = factEnc(seq_3)
+
+
 
 def train():
     print("train")

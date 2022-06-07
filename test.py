@@ -25,12 +25,8 @@ def pad_and_cut(data, length):
 
 # seq = torch.tensor(pad_and_cut(np.array(seq_tensor_2),5)).float()
 seq = torch.tensor(seq_tensor_1)
-seq = torch.transpose(seq, dim0=0, dim1=1)
 print(seq)
-factEnc = FactEnc()
-x = factEnc(seq)
-print(x)
-
+enc = FactEnc()
 
 
 

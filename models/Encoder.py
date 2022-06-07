@@ -7,13 +7,24 @@ class FactEnc(nn.Module):
         self.embedding = nn.Embedding(voc_size, embedding_dim=embedding_dim)
         self.enc_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=8)
         self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=6)
-
+        self.linear = nn.Sequential(nn.Linear(512, 2048),
+                                    nn.BatchNorm1d(2048),
+                                    nn.ReLU(),
+                                    nn.Linear(2048, 512),
+                                    nn.BatchNorm1d(512),
+                                    nn.ReLU()
+                                    )
     def forward(self, x):
-        # [seq_length, batch_size] -> [batch_size, seq_length]
+        # [batch_size, seq_length] -> [seq_length, batch_size]
         x = torch.transpose(x, dim0=0, dim1=1)
-        # [batch_size, seq_length] -> [batch_size, seq_length, d_model]
+        # [seq_length,batch_size] -> [ seq_length, batch_size, d_model]
         x = self.embedding(x)
-        out = self.Bert(x)
+        # [ seq_length, batch_size, d_model]
+        x = self.Bert(x)
+        # [batch_size, d_model]
+        x = torch.sum(x, dim=0)
+        # [batch_size, d_model]
+        out = self.linear(x)
         return out
 
 
@@ -23,3 +34,7 @@ class AccuEnc(nn.Module):
         super(AccuEnc,self).__init__()
         self.hidden_size = hidden_size
         self.gru = nn.GRU(hidden_size, hidden_size)
+
+    def forward(self, x):
+
+        return x

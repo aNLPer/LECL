@@ -26,10 +26,13 @@ def pad_and_cut(data, length):
 import torch
 
 sample1 = torch.ones(5,10)  #第一个序列的长度为5
+for i in sample1[0]:
+    print(int(i.item()))
 sample2 = 2*torch.ones(4,10)  #第二个序列的长度为4
 sample3 = 3*torch.ones(3,10)  #第三个序列的长度为3
 
 sequence = torch.nn.utils.rnn.pack_sequence([sample1, sample2, sample3])
+print(type(sequence.item()))
 print(sequence)
 print(sequence.data.size()) # torch.Size([12, 10])
 print(sequence.batch_sizes) # tensor([3, 3, 3, 2, 1])

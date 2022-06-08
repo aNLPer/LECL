@@ -1,6 +1,7 @@
 from torch.utils.data import Dataset, DataLoader
-from dataprepare.dataprepare import Lang
+from dataprepare.dataprepare import Lang,getAccus
 import torch.nn as nn
+import os
 import torch.optim as optim
 import torch
 import numpy as np
@@ -14,11 +15,13 @@ LR_ACCU_ENC = 0.0002
 LR_FACT_ENC = 0.001
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 512
+EPOCH = 100
 
 # 加载语料库信息
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
 lang = pickle.load(f)
 f.close()
+id2acc, acc2id = getAccus(os.path.join("./dataset/CAIL-SMALL","data_train_filtered.json"))
 
 class myDataset(Dataset):
     def __init__(self, seq_1_tensor, seq_2_tensor, seq_3_tensor, label_desc_tensor, label_tensor):
@@ -83,9 +86,14 @@ label_desc_tensor = torch.from_numpy(pad_and_cut(label_desc, SEQ_MAX_LENGTH))
 label_tensor = torch.from_numpy(label)
 
 train_data = myDataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_desc_tensor, label_tensor)
-iter_train_data = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
-for seq_1, seq_2, seq_3, label_desc, label in iter_train_data:
-    seq_1.size(0)
+train_data_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
+for seq_1, seq_2, seq_3, label_desc, label in train_data_loader:
+    print([lang.index2word[idx] for idx in seq_1])
+    print([lang.index2word[idx] for idx in seq_2])
+    print([lang.index2word[idx] for idx in seq_3])
+    print([lang.index2word[idx] for idx in label_desc])
+    print(id2acc[idx] for idx in label)
+test_data_loader = []
 # 实例化模型
 factEnc = FactEnc(lang.n_words, embedding_dim=EMBED_DIM)
 factEnc = factEnc.to(device)
@@ -99,16 +107,15 @@ accuEnc = accuEnc.to(device)
 optimizer_factEnc = optim.Adam(factEnc.parameters(), lr=LR_FACT_ENC)
 optimizer_accuEnc = optim.Adam(accuEnc.parameters(), lr=LR_ACCU_ENC)
 
-def train():
+def train(epoch):
     # 设置模型为训练状态
     factEnc.train()
     accuEnc.train()
     # 记录每个epoch的loss
     epoch_loss = 0
-    for seq_1, seq_2, seq_3, label_desc, label in iter_train_data:
+    for seq_1, seq_2, seq_3, label_desc, label in train_data_loader:
         seq_1, seq_2, seq_3, label_desc, label = \
             seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device), label.to(device)
-
         # 梯度清零
         optimizer_factEnc.zero_grad()
         optimizer_accuEnc.zero_grad()
@@ -124,18 +131,38 @@ def train():
         # 更新梯度
         optimizer_factEnc.step()
         optimizer_accuEnc.step()
+    epoch_loss = epoch_loss/len(train_data_loader.dataset)
+    print(f"Epoch: {epoch},   Training Loss: {epoch_loss}")
 
-        #计算损失
-
-    print("train")
-
-def itertrain():
-    print("itertrain")
 
 def evaluate():
-    print("evaluate")
-
+    # 设置模型为训练状态
+    factEnc.eval()
+    accuEnc.eval()
+    # 记录每个epoch的loss
+    epoch_loss = 0
+    # 不跟踪梯度
+    with torch.no_grad():
+        for seq_1, seq_2, seq_3, label_desc, label in test_data_loader:
+            seq_1, seq_2, seq_3, label_desc, label = \
+                seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device), label.to(device)
+            # 计算模型的输出
+            out_1 = factEnc(seq_1)
+            out_2 = factEnc(seq_2)
+            out_3 = factEnc(seq_3)
+            # 计算损失
+            loss = 0
+            epoch_loss += loss.item()
+            # 计算梯度
+            loss.backward()
+            # 更新梯度
+            optimizer_factEnc.step()
+            optimizer_accuEnc.step()
+    epoch_loss = epoch_loss / len(test_data_loader.dataset)
+    print(f"Epoch: {epoch},   Training Loss: {epoch_loss}")
+    print(f"Epoch: {epoch},   Validation Loss: {epoch_loss}")
 
 if __name__=='__main__':
     print("start train...")
-    print("wo ")
+    for epoch in range(100):
+        train(epoch)

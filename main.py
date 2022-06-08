@@ -16,6 +16,7 @@ LR_FACT_ENC = 0.001
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 512
 EPOCH = 100
+LABEL_DESC_MAX_LENGTH = 90
 
 # 加载语料库信息
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
@@ -82,17 +83,11 @@ seq_1, seq_2, seq_3, label_desc, label = prepareData()
 seq_1_tensor = torch.from_numpy(pad_and_cut(seq_1, SEQ_MAX_LENGTH))
 seq_2_tensor = torch.from_numpy(pad_and_cut(seq_2, SEQ_MAX_LENGTH))
 seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH))
-label_desc_tensor = torch.from_numpy(pad_and_cut(label_desc, SEQ_MAX_LENGTH))
+label_desc_tensor = torch.from_numpy(pad_and_cut(label_desc, LABEL_DESC_MAX_LENGTH))
 label_tensor = torch.from_numpy(label)
 
 train_data = myDataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_desc_tensor, label_tensor)
 train_data_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
-for seq_1, seq_2, seq_3, label_desc, label in train_data_loader:
-    print([lang.index2word[int(idx.item())] for idx in seq_1[0]])
-    print([lang.index2word[int(idx.item())] for idx in seq_2[0]])
-    print([lang.index2word[int(idx.item())] for idx in seq_3[0]])
-    print([lang.index2word[int(idx.item())] for idx in label_desc[0]])
-    print(id2acc[int(idx.item())] for idx in label[0])
 test_data_loader = []
 # 实例化模型
 factEnc = FactEnc(lang.n_words, embedding_dim=EMBED_DIM)

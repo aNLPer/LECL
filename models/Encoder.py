@@ -12,8 +12,7 @@ class FactEnc(nn.Module):
                                     nn.ReLU(),
                                     nn.Linear(2048, 512),
                                     nn.BatchNorm1d(512),
-                                    nn.ReLU()
-                                    )
+                                    nn.ReLU())
     def forward(self, x):
         # [batch_size, seq_length] -> [seq_length, batch_size]
         x = torch.transpose(x, dim0=0, dim1=1)

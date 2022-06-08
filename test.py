@@ -23,32 +23,22 @@ def pad_and_cut(data, length):
     new_data = np.array(data.tolist())
     return new_data
 
-# seq = torch.tensor(pad_and_cut(np.array(seq_tensor_2),5)).float()
-seq = torch.tensor(seq_tensor_1)
-print(seq)
-enc = FactEnc()
+import torch
+
+sample1 = torch.ones(5,10)  #第一个序列的长度为5
+sample2 = 2*torch.ones(4,10)  #第二个序列的长度为4
+sample3 = 3*torch.ones(3,10)  #第三个序列的长度为3
+
+sequence = torch.nn.utils.rnn.pack_sequence([sample1, sample2, sample3])
+print(sequence)
+print(sequence.data.size()) # torch.Size([12, 10])
+print(sequence.batch_sizes) # tensor([3, 3, 3, 2, 1])
+for t in sequence:
+    print(t)
 
 
 
 
 
-class myDataset(Dataset):
-    def __init__(self, seq_1, seq_2, label):
-        super(myDataset, self).__init__()
-        self.seq_tensor_1 = torch.tensor(seq_1, dtype=torch.long)
-        self.seq_tensor_2 = torch.tensor(seq_2, dtype=torch.long)
-        self.label_tensor = torch.tensor(label, dtype=torch.long)
-    def __getitem__(self, item):
-        return self.seq_tensor_1[item], self.seq_tensor_2[item], self.label_tensor[item]
 
-    def __len__(self):
-        return len(self.seq_tensor_1)
 
-# dataset = myDataset(seq_tensor_1,seq_tensor_2, seq_label)
-#
-# train_data = DataLoader(dataset, batch_size=2, shuffle=True)
-# for data_1,data_2,  label in train_data:
-#     print(data_1)
-#     print(data_1[0])
-#     print(data_2)
-#     print(label)

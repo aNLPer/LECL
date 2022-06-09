@@ -197,9 +197,9 @@ def getAccus(filename):
     f_id2acc = open("train_id2acc.pkl","wb")
     pickle.dump(id2acc, f_id2acc)
     f_id2acc.close()
-    f_acc2id = open("acc2id.pkl","wb")
+    f_acc2id = open("train_acc2id.pkl","wb")
     pickle.dump(acc2id, f_acc2id)
-    f_acc2id
+    f_acc2id.close()
     return id2acc, acc2id
 
 # 统计文本长度
@@ -302,7 +302,7 @@ if __name__=="__main__":
     #
     # # 将训练集中的文本转换成对应的索引
     # print("start word to index")
-    # id2acc, acc2id = getAccus(data_path)
+    id2acc, acc2id = getAccus(data_path)
     # f = open("lang_data_train_preprocessed.pkl", "rb")
     # lang = pickle.load(f)
     # f.close()

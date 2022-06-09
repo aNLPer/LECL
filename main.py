@@ -22,7 +22,10 @@ LABEL_DESC_MAX_LENGTH = 90 # 实际统计为83
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
 lang = pickle.load(f)
 f.close()
-id2acc, acc2id = getAccus(os.path.join("./dataset/CAIL-SMALL","data_train_filtered.json"))
+f = open("./dataprepare/train_id2acc.pkl")
+id2acc = pickle.load(f)
+f.close()
+f = open("./dataprepare/train_acc")
 
 class myDataset(Dataset):
     """

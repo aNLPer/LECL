@@ -1,5 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
-from dataprepare.dataprepare import Lang,getAccus
+from dataprepare.dataprepare import Lang,getAccus,get_acc_desc
 import torch.nn as nn
 import os
 import torch.optim as optim
@@ -8,6 +8,7 @@ import numpy as np
 import pickle
 from models.Encoder import FactEnc, AccuEnc
 import json
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 32
@@ -22,10 +23,32 @@ LABEL_DESC_MAX_LENGTH = 90 # 实际统计为83
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
 lang = pickle.load(f)
 f.close()
-f = open("./dataprepare/train_id2acc.pkl")
+
+f = open("./dataprepare/train_id2acc.pkl","rb")
 id2acc = pickle.load(f)
 f.close()
-f = open("./dataprepare/train_acc")
+
+f = open("./dataprepare/train_acc2id.pkl","rb")
+acc2id = pickle.load(f)
+f.close()
+
+# 指控id-指控描述idx
+def getId2desc():
+    accid2descidx = [[] for _ in range(112)]
+    with open("./dataset/CAIL-SMALL/data_train_forModel.txt", "r", encoding="utf-8") as f:
+        for line in f:
+            item = json.loads(line)
+            id = item[3]
+            desc_idx = item[4]
+            accid2descidx[id] = desc_idx
+    return accid2descidx
+
+accid2descidx = getId2desc()
+# 指控id-指控desc_representation
+arr = [list(np.random.normal(loc=0, scale=1, size=512)) for i in range(112)]
+desc_representation = np.array(arr)
+print(desc_representation.shape)
+
 
 class myDataset(Dataset):
     """

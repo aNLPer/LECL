@@ -9,6 +9,7 @@ import os
 
 label = [[0],[0],[1],[13],[12]]
 label = torch.tensor(label)
+label[0] = torch.tensor([10])
 print(label)
 print(list(set(label.squeeze().numpy())))
 

@@ -47,7 +47,6 @@ accid2descidx = getId2desc()
 # 指控id-指控desc_representation
 arr = [list(np.random.normal(loc=0, scale=1, size=512)) for i in range(112)]
 desc_representation = np.array(arr)
-print(desc_representation.shape)
 
 
 class myDataset(Dataset):
@@ -129,6 +128,7 @@ accuEnc = accuEnc.to(device)
 optimizer_factEnc = optim.Adam(factEnc.parameters(), lr=LR_FACT_ENC)
 optimizer_accuEnc = optim.Adam(accuEnc.parameters(), lr=LR_ACCU_ENC)
 
+
 def train(epoch):
     # 设置模型为训练状态
     factEnc.train()
@@ -137,8 +137,8 @@ def train(epoch):
     epoch_loss = 0
     for seq_1, seq_2, seq_3, label in train_data_loader:
         # 获取采样得到的labeldesc
-        label_index = list(set(label.squeeze().numpy()))
-
+        label_idx = list(set(label.squeeze().numpy()))
+        desc_idx = [accid2descidx[i] for i in label_idx]
         seq_1, seq_2, seq_3, label_desc, label = \
             seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device), label.to(device)
         # 梯度清零
@@ -187,7 +187,7 @@ def evaluate():
     print(f"Epoch: {epoch},   Training Loss: {epoch_loss}")
     print(f"Epoch: {epoch},   Validation Loss: {epoch_loss}")
 
-if __name__=='__main__':
-    print("start train...")
-    for epoch in range(100):
-        train(epoch)
+
+print("start train...")
+for epoch in range(100):
+    train(epoch)

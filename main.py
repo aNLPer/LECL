@@ -118,7 +118,7 @@ test_data_loader = []
 # 实例化模型
 factEnc = FactEnc(lang.n_words, embedding_dim=EMBED_DIM)
 factEnc = factEnc.to(device)
-accuEnc = AccuEnc()
+accuEnc = AccuEnc(512)
 accuEnc = accuEnc.to(device)
 # 模型初始化
 

@@ -4,7 +4,6 @@ import pickle
 import re
 import json
 import thulac
-# import matplotlib.pyplot as plt
 import numpy as np
 import operator
 
@@ -193,8 +192,14 @@ def getAccus(filename):
             acc = example["meta"]["accusation"][0]
             if acc not in id2acc:
                 id2acc.append(acc)
-            for idx, acc in enumerate(id2acc):
-                acc2id[acc] = idx
+        for idx, acc in enumerate(id2acc):
+            acc2id[acc] = idx
+    f_id2acc = open("train_id2acc.pkl","wb")
+    pickle.dump(id2acc, f_id2acc)
+    f_id2acc.close()
+    f_acc2id = open("acc2id.pkl","wb")
+    pickle.dump(acc2id, f_acc2id)
+    f_acc2id
     return id2acc, acc2id
 
 # 统计文本长度
@@ -285,7 +290,7 @@ def load_accusation_classified(file_path):
 
 if __name__=="__main__":
     # # 生成训练数据集
-    # data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
+    data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
     # acc_desc = get_acc_desc("accusation_description.json")
     # print("start processing data...")
     # getData(data_path, acc_desc)
@@ -320,17 +325,17 @@ if __name__=="__main__":
     # f = open("sample_category_dis.pkl", "wb")
     # pickle.dump(sample_dis,f)
     # f.close()
-
-    f = open("sample_category_dis.pkl", "rb")
-    sample_dis = pickle.load(f)
-    sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
-    f.close()
-    print(sample_dis)
-
-    top_10 = sum(list(sample_dis.values())[0:10])
-    bottom_10 = sum(list(sample_dis.values())[-10:])
-    print(f"top_10:{top_10/sum(sample_dis.values())}")
-    print(f"bottom_20:{bottom_10/sum(sample_dis.values())}")
+    #
+    # f = open("sample_category_dis.pkl", "rb")
+    # sample_dis = pickle.load(f)
+    # sample_dis = dict(sorted(sample_dis.items(), key=operator.itemgetter(1),reverse=True))
+    # f.close()
+    # print(sample_dis)
+    #
+    # top_10 = sum(list(sample_dis.values())[0:10])
+    # bottom_10 = sum(list(sample_dis.values())[-10:])
+    # print(f"top_10:{top_10/sum(sample_dis.values())}")
+    # print(f"bottom_20:{bottom_10/sum(sample_dis.values())}")
 
 
     # # 获取指控字典

@@ -1,4 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
+from torch.nn.utils.rnn import pad_sequence
 from dataprepare.dataprepare import Lang,getAccus,get_acc_desc
 import torch.nn as nn
 import os
@@ -136,9 +137,14 @@ def train(epoch):
     # 记录每个epoch的loss
     epoch_loss = 0
     for seq_1, seq_2, seq_3, label in train_data_loader:
-        # 获取采样得到的labeldesc
-        label_idx = list(set(label.squeeze().numpy()))
-        desc_idx = [accid2descidx[i] for i in label_idx]
+        # 获取采样得到的label_desc
+        label_idxs = list(set(label.squeeze().numpy()))
+        desc_idxs = [accid2descidx[i] for i in label_idxs]
+        # 编码desc
+
+        for idx, desc in enumerate(desc_idxs):
+            accuEnc(desc)
+            # label =
         seq_1, seq_2, seq_3, label_desc, label = \
             seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device), label.to(device)
         # 梯度清零

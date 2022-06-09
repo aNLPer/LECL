@@ -13,6 +13,7 @@ class FactEnc(nn.Module):
                                     nn.Linear(2048, 512),
                                     nn.BatchNorm1d(512),
                                     nn.ReLU())
+
     def forward(self, x):
         # [batch_size, seq_length] -> [seq_length, batch_size]
         x = torch.transpose(x, dim0=0, dim1=1)
@@ -27,13 +28,18 @@ class FactEnc(nn.Module):
         return out
 
 
-
 class AccuEnc(nn.Module):
-    def __init__(self, hidden_size):
+    def __init__(self, input_size, hidden_size):
         super(AccuEnc,self).__init__()
         self.hidden_size = hidden_size
-        self.gru = nn.GRU(hidden_size, hidden_size)
+        self.gru = nn.GRU(input_size, hidden_size)
 
     def forward(self, x):
+        h_0 = torch.randn(size=(1, x.shape[1], self.hidden_size))
+        outputs, h_n = self.gru(x, h_0)
+        return h_n
 
-        return x
+
+accuEnc = AccuEnc(5,10)
+input = torch.randn([5, 3, 5])
+accuEnc(input)

@@ -31,6 +31,7 @@ class FactEnc(nn.Module):
 class AccuEnc(nn.Module):
     def __init__(self, input_size, hidden_size):
         super(AccuEnc,self).__init__()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.hidden_size = hidden_size
         self.embedding = nn.Embedding(10, 5)
         self.gru = nn.GRU(input_size, self.hidden_size, bidirectional=True)
@@ -43,6 +44,7 @@ class AccuEnc(nn.Module):
         x = self.embedding(x)
         # [bidirectional*n_layer=2, batch_size, d_model]
         h_0 = torch.randn(size=(2, x.shape[1], self.hidden_size))
+        h_0.to(self.device)
         # outputs = [seq_length, batch_size, 2*d_model]
         outputs, h_n = self.gru(x, h_0)
         # [seq_length, batch_size, 2*d_model] -> [batch_size, 2*d_model]

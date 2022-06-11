@@ -7,11 +7,11 @@ class FactEnc(nn.Module):
         self.embedding = nn.Embedding(voc_size, embedding_dim=embedding_dim)
         self.enc_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=8)
         self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=6)
-        self.linear = nn.Sequential(nn.Linear(512, 2048),
-                                    nn.BatchNorm1d(2048),
+        self.linear = nn.Sequential(nn.Linear(embedding_dim, 4*embedding_dim),
+                                    nn.BatchNorm1d(4*embedding_dim),
                                     nn.ReLU(),
-                                    nn.Linear(2048, 512),
-                                    nn.BatchNorm1d(512),
+                                    nn.Linear(4*embedding_dim, embedding_dim),
+                                    nn.BatchNorm1d(embedding_dim),
                                     nn.ReLU())
 
     def forward(self, x):

@@ -226,7 +226,7 @@ def train(epoch):
         optimizer_accuEnc.step()
     epoch_loss = epoch_loss/len(train_data_loader.dataset)
     end = timer()
-    print(f"Epoch: {epoch},   Training Loss: {epoch_loss},  time: {end-start}s/epoch")
+    print(f"Epoch: {epoch},   Training Loss: {epoch_loss},  time: {(end-start)/60}s/epoch")
 
 
 def evaluate():

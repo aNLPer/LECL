@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
+from timeit import default_timer as timer
 from dataprepare.dataprepare import Lang,getAccus,get_acc_desc
 import torch.nn as nn
 import os
@@ -203,6 +204,7 @@ def train(epoch):
     model.train()
     # 记录每个epoch的loss
     epoch_loss = 0
+    start = timer()
     for seq_1, seq_2, seq_3, label in train_data_loader:
         # [batch_size, *] -> [batch_size, max_label_length]
         label_desc = [torch.tensor(label2desc[i.item()]) for i in label]
@@ -223,7 +225,8 @@ def train(epoch):
         optimizer_factEnc.step()
         optimizer_accuEnc.step()
     epoch_loss = epoch_loss/len(train_data_loader.dataset)
-    print(f"Epoch: {epoch},   Training Loss: {epoch_loss}")
+    end = timer()
+    print(f"Epoch: {epoch},   Training Loss: {epoch_loss},  time: {end-start}s/epoch")
 
 
 def evaluate():

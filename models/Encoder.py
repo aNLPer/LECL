@@ -43,8 +43,7 @@ class AccuEnc(nn.Module):
         # [seq_length, batch_size] -> [seq_length, batch_size, d_model]
         x = self.embedding(x)
         # [bidirectional*n_layer=2, batch_size, d_model]
-        h_0 = torch.randn(size=(2, x.shape[1], self.hidden_size))
-        h_0.to(self.device)
+        h_0 = torch.randn(size=(2, x.shape[1], self.hidden_size)).to(self.device)
         # outputs = [seq_length, batch_size, 2*d_model]
         outputs, h_n = self.gru(x, h_0)
         # [seq_length, batch_size, 2*d_model] -> [batch_size, 2*d_model]

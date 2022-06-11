@@ -23,7 +23,6 @@ TEMPER = 0.07
 # 加载语料库信息
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
 lang = pickle.load(f)
-print(lang.n_words)
 f.close()
 
 

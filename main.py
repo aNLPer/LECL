@@ -205,7 +205,11 @@ def train(epoch):
     epoch_loss = 0
     for seq_1, seq_2, seq_3, label in train_data_loader:
         # [batch_size, *] -> [batch_size, max_label_length]
-        label_desc = [label2desc[i.item()] for i in label]
+        label_desc = []
+        for i in label:
+            desc = label2desc[i.item()]
+            label2desc.append(desc)
+        # label_desc = [label2desc[i.item()] for i in label]
         label_desc = pad_sequence([torch.tensor(i) for i in label_desc])
         # 使用GPU
         seq_1, seq_2, seq_3, label_desc = seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device)

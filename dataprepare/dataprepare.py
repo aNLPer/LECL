@@ -291,14 +291,14 @@ def load_accusation_classified(file_path):
 if __name__=="__main__":
     # # 生成训练数据集
     data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
-    # acc_desc = get_acc_desc("accusation_description.json")
-    # print("start processing data...")
-    # getData(data_path, acc_desc)
-    # print("data processing end.")
-    #
-    # # 统计训练集语料库生成对象
-    # lang_name = "2018_CAIL_SMALL_TRAIN"
-    # getLang(lang_name)
+    acc_desc = get_acc_desc("accusation_description.json")
+    print("start processing data...")
+    getData(data_path, acc_desc)
+    print("data processing end.")
+
+    # 统计训练集语料库生成对象
+    lang_name = "2018_CAIL_SMALL_TRAIN"
+    getLang(lang_name)
     #
     # # 将训练集中的文本转换成对应的索引
     # print("start word to index")

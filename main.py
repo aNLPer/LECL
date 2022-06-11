@@ -12,7 +12,7 @@ import json
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 LR_ACCU_ENC = 0.0002
 LR_FACT_ENC = 0.001
 SEQ_MAX_LENGTH = 500
@@ -23,7 +23,9 @@ TEMPER = 0.07
 # 加载语料库信息
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
 lang = pickle.load(f)
+print(lang.n_words)
 f.close()
+
 
 f = open("./dataprepare/train_id2acc.pkl","rb")
 id2acc = pickle.load(f)

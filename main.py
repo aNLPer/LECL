@@ -56,20 +56,18 @@ class myDataset(Dataset):
     """
     训练数据集
     """
-    def __init__(self, seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor, label_desc):
+    def __init__(self, seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor):
         self.seq_1 = seq_1_tensor
         self.seq_2 = seq_2_tensor
         self.seq_3 = seq_3_tensor
         self.label = label_tensor
-        self.label_desc = label_desc
 
     def __getitem__(self, index):
         seq_1 = self.seq_1[index]
         seq_2 = self.seq_2[index]
         seq_3 = self.seq_3[index]
         label = self.label[index]
-        label_desc = self.label_desc[index]
-        return seq_1, seq_2, seq_3, label, label_desc
+        return seq_1, seq_2, seq_3, label
 
     def __len__(self):
         return len(self.seq_1)
@@ -98,7 +96,7 @@ def prepareData():
         seq_2 = []
         seq_3 = []
         label = []
-        label_desc = []
+        # label_desc = []
         label2desc = {}
         for line in f:
             item = json.loads(line)
@@ -106,7 +104,7 @@ def prepareData():
             seq_2.append(item[1])
             seq_3.append(item[2])
             label.append([item[3]])
-            label_desc.append(item[4])
+            # label_desc.append(item[4])
             if item[3] not in label2desc:
                 label2desc[item[3]] = item[4]
     return np.array(seq_1), np.array(seq_2), np.array(seq_3), np.array(label), label_desc, label2desc
@@ -119,7 +117,7 @@ seq_2_tensor = torch.from_numpy(pad_and_cut(seq_2, SEQ_MAX_LENGTH))
 seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH))
 label_tensor = torch.from_numpy(label)
 
-train_data = myDataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor, label_desc)
+train_data = myDataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor)
 train_data_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 test_data_loader = []
 # 实例化模型
@@ -204,8 +202,9 @@ def train(epoch):
     model.train()
     # 记录每个epoch的loss
     epoch_loss = 0
-    for seq_1, seq_2, seq_3, label, label_desc in train_data_loader:
+    for seq_1, seq_2, seq_3, label in train_data_loader:
         # [batch_size, *] -> [batch_size, max_label_length]
+        label_desc = [label2desc[i.item()] for i in label]
         label_desc = pad_sequence([torch.tensor(i) for i in label_desc])
         # 使用GPU
         seq_1, seq_2, seq_3, label_desc = seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device)
@@ -219,7 +218,7 @@ def train(epoch):
         epoch_loss += loss.item()
         # 计算梯度
         loss.backward()
-        # 更新梯度
+        # 更新参数
         optimizer_factEnc.step()
         optimizer_accuEnc.step()
     epoch_loss = epoch_loss/len(train_data_loader.dataset)

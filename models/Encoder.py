@@ -6,7 +6,7 @@ class FactEnc(nn.Module):
         super(FactEnc, self).__init__()
         self.embedding = nn.Embedding(voc_size, embedding_dim=embedding_dim)
         self.enc_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=8)
-        self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=6)
+        self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=4)
         self.linear = nn.Sequential(nn.Linear(embedding_dim, 4*embedding_dim),
                                     nn.BatchNorm1d(4*embedding_dim),
                                     nn.ReLU(),

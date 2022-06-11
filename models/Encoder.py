@@ -37,9 +37,7 @@ class AccuEnc(nn.Module):
         self.gru = nn.GRU(input_size, self.hidden_size, bidirectional=True)
         self.linear = nn.Linear(self.hidden_size*2, hidden_size)
 
-    def forward(self, x):
-        # [batch_size, seq_length] -> [seq_length, batch_size]
-        x = torch.transpose(x, dim0=0, dim1=1)
+    def forward(self, x): # x [seq_length, batch_size]
         # [seq_length, batch_size] -> [seq_length, batch_size, d_model]
         x = self.embedding(x)
         # [bidirectional*n_layer=2, batch_size, d_model]

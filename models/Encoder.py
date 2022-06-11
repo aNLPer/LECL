@@ -65,7 +65,3 @@ class Encoder(nn.Module):
         out_3 = self.factEnc(seq_3)
         label_rep = self.accuEnc(label_desc)
         return out_1, out_2, out_3, label_rep
-
-accEnc = AccuEnc(5,5)
-print(accEnc(torch.tensor([[1,2,3],[1,2,3]])))
-print(accEnc(torch.tensor([[1,2,3],[1,2,3]])))

@@ -107,11 +107,11 @@ def prepareData():
             # label_desc.append(item[4])
             if item[3] not in label2desc:
                 label2desc[item[3]] = item[4]
-    return np.array(seq_1), np.array(seq_2), np.array(seq_3), np.array(label), label_desc, label2desc
+    return np.array(seq_1), np.array(seq_2), np.array(seq_3), np.array(label), label2desc
 
 
 # 数据准备
-seq_1, seq_2, seq_3, label, label_desc, label2desc = prepareData()
+seq_1, seq_2, seq_3, label, label2desc = prepareData()
 seq_1_tensor = torch.from_numpy(pad_and_cut(seq_1, SEQ_MAX_LENGTH))
 seq_2_tensor = torch.from_numpy(pad_and_cut(seq_2, SEQ_MAX_LENGTH))
 seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH))

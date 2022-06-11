@@ -33,7 +33,7 @@ class AccuEnc(nn.Module):
         super(AccuEnc,self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.hidden_size = hidden_size
-        self.embedding = nn.Embedding(10, 5)
+        self.embedding = None
         self.gru = nn.GRU(input_size, self.hidden_size, bidirectional=True)
         self.linear = nn.Linear(self.hidden_size*2, hidden_size)
 
@@ -47,8 +47,8 @@ class AccuEnc(nn.Module):
         # outputs = [seq_length, batch_size, 2*d_model]
         outputs, h_n = self.gru(x, h_0)
         # [seq_length, batch_size, 2*d_model] -> [batch_size, 2*d_model]
-        outputs = torch.sum(outputs, dim=0)/x.shape[0]
-        # [batch_size, d_model]
+        outputs = torch.mean(outputs, dim=0)
+        # [batch_size, 2*d_model] -> [batch_size, d_model]
         outputs = self.linear(outputs)
         return outputs
 

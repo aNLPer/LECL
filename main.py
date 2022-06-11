@@ -152,7 +152,7 @@ def loss_fun(out_1, out_2, out_3, label_rep):
         x_label_rep = torch.cosine_similarity(x, label_rep, dim=1)/TEMPER
 
         molecule = torch.sum(torch.tensor([torch.exp(x_out2[i]), torch.exp(x_out3[i]), torch.exp(x_label_rep[i])]))
-        denominator = torch.sum(x_out1) - x_out1[i] + torch.sum(x_out2) + torch.sum(x_out3) + torch.sum(x_label_rep)
+        denominator = torch.sum(torch.exp(x_out1)) - torch.exp(x_out1[i]) + torch.sum(torch.exp(x_out2)) + torch.sum(torch.exp(x_out3)) + torch.sum(torch.exp(x_label_rep))
         loss_out1 -= torch.log(molecule/denominator)
 
     # out_2 样本损失函数
@@ -170,7 +170,7 @@ def loss_fun(out_1, out_2, out_3, label_rep):
         x_label_rep = torch.cosine_similarity(x, label_rep, dim=1) / TEMPER
 
         molecule = torch.sum(torch.tensor([torch.exp(x_out1[i]), torch.exp(x_out3[i]), torch.exp(x_label_rep[i])]))
-        denominator = torch.sum(x_out1) + torch.sum(x_out2) - x_out2[i] + torch.sum(x_out3) + torch.sum(x_label_rep)
+        denominator = torch.sum(torch.exp(x_out1)) + torch.sum(torch.exp(x_out2)) - torch.exp(x_out2[i]) + torch.sum(torch.exp(x_out3)) + torch.sum(torch.exp(x_label_rep))
         loss_out2 -= torch.log(molecule / denominator)
 
     # out_3 样本损失函数
@@ -188,7 +188,7 @@ def loss_fun(out_1, out_2, out_3, label_rep):
         x_label_rep = torch.cosine_similarity(x, label_rep, dim=1) / TEMPER
 
         molecule = torch.sum(torch.tensor([torch.exp(x_out1[i]), torch.exp(x_out2[i]), torch.exp(x_label_rep[i])]))
-        denominator = torch.sum(x_out1) + torch.sum(x_out2) + torch.sum(x_out3) - x_out3[i] + torch.sum(x_label_rep)
+        denominator = torch.sum(torch.exp(x_out1)) + torch.sum(torch.exp(x_out2)) + torch.sum(torch.exp(x_out3)) - torch.exp(x_out3[i]) + torch.sum(torch.exp(x_label_rep))
         loss_out3 -= torch.log(molecule / denominator)
 
     return loss_out1 + loss_out2 + loss_out3

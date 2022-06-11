@@ -13,7 +13,7 @@ import json
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 16
+BATCH_SIZE = 24
 LR_ACCU_ENC = 0.0002
 LR_FACT_ENC = 0.001
 SEQ_MAX_LENGTH = 500
@@ -258,5 +258,5 @@ def evaluate():
 
 
 print("start train...")
-for epoch in range(100):
+for epoch in range(50):
     train(epoch)

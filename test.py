@@ -1,15 +1,14 @@
-from models.Encoder import FactEnc, AccuEnc
-from torch.nn.utils.rnn import pack_sequence
+from torch.nn.utils.rnn import pack_sequence,pad_sequence
 import torch
 import numpy as np
 import torch.nn as nn
-from torch.utils.data import Dataset, DataLoader
-from dataprepare.dataprepare import getAccus,Lang
-import os
+a = torch.tensor([[1,3,4],[1,2,3]],dtype=torch.float32)
+b = torch.tensor([[1,2,4],[1,2,5]],dtype=torch.float32)
+cosim = torch.cosine_similarity(a,b, dim=1)
+print(cosim)
+print(cosim/2)
 
-t = torch.tensor([[1],[2],[0,0]])
 
-print(pack_sequence(t))
 
 
 

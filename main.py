@@ -145,7 +145,7 @@ val_data_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=True)
 
 # 维护label-representation表
 LABEL_REPRESENTATION = torch.randn(size=(len(id2acc), EMBED_DIM),dtype=torch.float32)
-LABEL_REPRESENTATION.to(device)
+LABEL_REPRESENTATION = LABEL_REPRESENTATION.to(device)
 
 # 实例化模型
 model = Encoder(voc_size=lang.n_words, embed_dim= EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
@@ -233,7 +233,7 @@ def predict(outputs):
         # [112, EMBED_DIM]
         reps = rep.repeat(len(LABEL_REPRESENTATION),1)
         # [112]
-        similarities = torch.cosine_similarity(reps, LABEL_REPRESENTATION, dim=1)
+        similarities = torch.exp(torch.cosine_similarity(reps, LABEL_REPRESENTATION, dim=1)/TEMPER)
         # max similarity corresponding index
         pred = torch.argmax(similarities)
         # batch_size

@@ -1,4 +1,6 @@
 import json
+import torch
+import torch.nn as nn
 import pickle
 class Lang:
     # 语料库对象
@@ -41,3 +43,13 @@ def getLang(lang_name):
         if count % 5000==0:
             print(f"已统计{count}条数据")
     print(lang.n_words)
+
+
+print(torch.sum(torch.tensor([[1],[2],[3],[4]]) == [[1],[0],[3],[4]]))
+
+
+# input1 = torch.randn(100, 128)
+# input2 = torch.randn(100, 128)
+# cos = nn.CosineSimilarity(dim=1, eps=1e-6)
+# output = cos(input1, input2)
+# print(output)

@@ -11,8 +11,8 @@ import json
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 24
-LR_ACCU_ENC = 0.0002
-LR_FACT_ENC = 0.001
+LR_ACCU_ENC = 0.001
+LR_FACT_ENC = 0.005
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
@@ -44,14 +44,8 @@ def getId2desc():
     return accid2descidx
 
 accid2descidx = getId2desc()
-# 指控id-指控desc_representation
-arr = [list(np.random.normal(loc=0, scale=1, size=512)) for i in range(112)]
-desc_representation = np.array(arr)
 
-
-
-
-class myDataset(Dataset):
+class train_dataset(Dataset):
     """
     训练数据集
     """
@@ -71,6 +65,20 @@ class myDataset(Dataset):
     def __len__(self):
         return len(self.seq_1)
 
+class val_dataset(Dataset):
+    """
+    验证数据集
+    """
+    def __init__(self, seq_tensor, label_tensor):
+        self.seq = seq_tensor
+        self.label = label_tensor
+
+    def __getitem__(self, index):
+        return self.seq[index], self.label[index]
+
+    def __len__(self):
+        return len(self.seq)
+
 # BERT模型输入序列填充和截取
 def pad_and_cut(data, length):
     """
@@ -89,13 +97,12 @@ def pad_and_cut(data, length):
     new_data = np.array(data.tolist())
     return new_data
 
-def prepareData():
+def prepare_training_data():
     with open("./dataset/CAIL-SMALL/data_train_forModel.txt", "r", encoding="utf-8") as f:
         seq_1 = []
         seq_2 = []
         seq_3 = []
         label = []
-        # label_desc = []
         label2desc = {}
         for line in f:
             item = json.loads(line)
@@ -108,24 +115,44 @@ def prepareData():
                 label2desc[item[3]] = item[4]
     return np.array(seq_1), np.array(seq_2), np.array(seq_3), np.array(label), label2desc
 
+def prepare_valid_data():
+    with open("./dataset/CAIL-SMALL/data_valid_forModel(base).txt", "r", encoding="utf-8") as f:
+        seq = []
+        label = []
+        for line in f:
+            item = json.loads(line)
+            seq.append(item[0])
+            label.append([item[1]])
+    return np.array(seq),np.array(label)
 
 # 数据准备
-seq_1, seq_2, seq_3, label, label2desc = prepareData()
+seq_1, seq_2, seq_3, label_train, label2desc = prepare_training_data()
 seq_1_tensor = torch.from_numpy(pad_and_cut(seq_1, SEQ_MAX_LENGTH))
 seq_2_tensor = torch.from_numpy(pad_and_cut(seq_2, SEQ_MAX_LENGTH))
 seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH))
-label_tensor = torch.from_numpy(label)
+label_tensor = torch.from_numpy(label_train)
 
-train_data = myDataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor)
+train_data = train_dataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor)
 train_data_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
-test_data_loader = []
+
+seq, label_val = prepare_valid_data()
+seq_val_tensor = torch.from_numpy(pad_and_cut(seq, SEQ_MAX_LENGTH))
+label_val_tensor = torch.from_numpy(label_val)
+
+val_data = val_dataset(seq_val_tensor, label_val_tensor)
+val_data_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=True)
+
+# 维护label-representation表
+LABEL_REPRESENTATION = torch.randn(size=(len(id2acc), EMBED_DIM),dtype=torch.float32)
+LABEL_REPRESENTATION.to(device)
+
 # 实例化模型
 model = Encoder(voc_size=lang.n_words, embed_dim= EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
 model.to(device)
 # 模型初始化
 
 # 定义损失函数
-def loss_fun(out_1, out_2, out_3, label_rep):
+def train_loss_fun(out_1, out_2, out_3, label_rep):
     """
     损失函数
     :param out_1: tensor
@@ -191,16 +218,39 @@ def loss_fun(out_1, out_2, out_3, label_rep):
 
     return loss_out1 + loss_out2 + loss_out3
 
+def valid_lass_func():
+    pass
+
+def predict(outputs):
+    """
+    得到预测标签
+    :param outputs: [batch_size, d_model]
+    :return: preds
+    """
+    preds = []
+    for rep in outputs:
+        # [112, EMBED_DIM]
+        reps = rep.repeat(len(LABEL_REPRESENTATION),1)
+        # [112]
+        similarities = torch.cosine_similarity(reps, LABEL_REPRESENTATION, dim=1)
+        # max similarity corresponding index
+        pred = torch.argmax(similarities)
+        # batch_size
+        preds.append(pred)
+    return torch.tensor(preds)
+
+
 # 优化器
 optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
 optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
 
-
+train_loss_toral = []
+val_loss_total = []
 def train(epoch):
     # 设置模型为训练状态
     model.train()
     # 记录每个epoch的loss
-    epoch_loss = 0
+    train_loss = 0
     start = timer()
     for seq_1, seq_2, seq_3, label in train_data_loader:
         # [batch_size, *] -> [batch_size, max_label_length]
@@ -213,49 +263,45 @@ def train(epoch):
         optimizer_accuEnc.zero_grad()
         # 计算模型的输出 [batch_size, d_model]
         out_1, out_2, out_3, label_rep = model(seq_1, seq_2, seq_3, label_desc)
+        # 更新label表示向量
+        for idx, val in enumerate(label):
+            LABEL_REPRESENTATION[val] = label_rep[idx]
         # 计算损失
-        loss = loss_fun(out_1, out_2, out_3, label_rep)
-        epoch_loss += loss.item()
+        loss = train_loss(out_1, out_2, out_3, label_rep)
+        train_loss += loss.item()
         # 计算梯度
         loss.backward()
         # 更新参数
         optimizer_factEnc.step()
         optimizer_accuEnc.step()
-    epoch_loss = epoch_loss/len(train_data_loader.dataset)
+    train_loss = train_loss/len(train_data_loader.dataset)
+    train_loss_toral.append(train_loss)
     end = timer()
-    print(f"Epoch: {epoch},   Training Loss: {epoch_loss},  time: {(end-start)/60} min/epoch")
+    print(f"Epoch: {epoch},   Training Loss: {train_loss},  time: {(end-start)/60} min/epoch")
 
 
 def evaluate():
-    # 设置模型为训练状态
-    # factEnc.eval()
-    # accuEnc.eval()
+    # 设置模型为评估状态
+    model.eval()
     # 记录每个epoch的loss
-    epoch_loss = 0
+    val_loss = 0
     # 不跟踪梯度
     with torch.no_grad():
-        for seq_1, seq_2, seq_3, label_desc, label in test_data_loader:
-            seq_1, seq_2, seq_3, label_desc, label = \
-                seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device), label.to(device)
-            # 计算模型的输出
-            model.factEnc()
-            # out_1 = factEnc(seq_1)
-            # out_2 = factEnc(seq_2)
-            # out_3 = factEnc(seq_3)
+        for seq, label in val_data_loader:
+            seq, label = seq.to(device), label.to(device)
+            # 计算模型的输出 [batch_size, d_model]
+            outputs = model.factEnc(seq)
+            # 得到预测标签 [batch_size]
+            preds = predict(outputs)
+            acc = torch.sum(preds == torch.tensor(label))/len(label)
             # 计算损失
             loss = 0
-            epoch_loss += loss.item()
-            # 计算梯度
-            loss.backward()
-            # 更新梯度
-            optimizer_factEnc.step()
-            optimizer_accuEnc.step()
-    epoch_loss = epoch_loss / len(test_data_loader.dataset)
-    print(f"Epoch: {epoch},   Training Loss: {epoch_loss}")
-    print(f"Epoch: {epoch},   Validation Loss: {epoch_loss}")
-
+            val_loss += loss.item()
+    val_loss = val_loss / len(val_data_loader.dataset)
+    print(f"Epoch: {epoch},   Validation Loss: {val_loss}")
 
 print("start train...")
 for epoch in range(50):
     train(epoch)
+    evaluate(epoch)
 

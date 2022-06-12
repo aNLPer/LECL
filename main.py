@@ -268,7 +268,7 @@ def train(epoch):
         for idx, val in enumerate(label):
             LABEL_REPRESENTATION[val.item()] = label_rep[idx]
         # 计算损失
-        loss = train_loss(out_1, out_2, out_3, label_rep)
+        loss = train_loss_fun(out_1, out_2, out_3, label_rep)
         train_loss += loss.item()
         # 计算梯度
         loss.backward()

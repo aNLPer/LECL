@@ -6,6 +6,7 @@ import thulac
 import re
 import utils.commonUtils as commonUtils
 from utils.commonUtils import Lang
+from utils.commonUtils import Lang
 BASE_PATH = "../dataset/CAIL-SMALL"
 
 def valid_data_filter(sourcefilename, targetfilename):
@@ -137,20 +138,19 @@ def word2Index(sourcefile, targetfile, lang, acc2id):
     fi.close()
     fo.close()
 
-#
-f = open("./lang_data_train_preprocessed.pkl", "rb")
-lang = pickle.load(f)
-f.close()
-f = open("./train_acc2id.pkl", "rb")
-acc2id = pickle.load(f)
-f.close()
+# f = open("./lang_data_train_preprocessed.pkl", "rb")
+# lang = pickle.load(f)
+# f.close()
+# f = open("./train_acc2id.pkl", "rb")
+# acc2id = pickle.load(f)
+# f.close()
 # sourcefile = "../dataset/CAIL-SMALL/data_valid_preprocessed(base).txt"
 # targetfile = "../dataset/CAIL-SMALL/data_valid_forModel(base).txt"
 # word2Index(sourcefile, targetfile, lang, acc2id)
 
-s = "[[12, 6341, 317, 49, 1948, 4541, 18, 4542, 1609, 4055, 121, 289, 137, 137, 237, 238, 12, 6341, 586, 4055, 61, 591, 207, 55748, 145, 146, 6699, 213, 148, 69, 339, 69, 4055, 61, 70, 557, 72, 149, 4339, 603, 557, 72, 149, 250, 235, 295, 296, 297, 509, 29, 240, 241, 243, 69, 246, 378, 12, 299, 252, 295, 296, 12, 6341, 301, 4, 72, 300, 301, 301, 342, 235, 252, 874, 557, 301, 302, 232, 558, 234, 2107, 304, 305], 0, [3, 4, 5, 6, 7, 8, 9, 5, 10]]"
-item = json.loads(s)
-print([lang.index2word[i] for i in item[0]])
-print("\n")
-print([lang.index2word[i] for i in item[2]])
-print("end")
+# s = "[[12, 6341, 317, 49, 1948, 4541, 18, 4542, 1609, 4055, 121, 289, 137, 137, 237, 238, 12, 6341, 586, 4055, 61, 591, 207, 55748, 145, 146, 6699, 213, 148, 69, 339, 69, 4055, 61, 70, 557, 72, 149, 4339, 603, 557, 72, 149, 250, 235, 295, 296, 297, 509, 29, 240, 241, 243, 69, 246, 378, 12, 299, 252, 295, 296, 12, 6341, 301, 4, 72, 300, 301, 301, 342, 235, 252, 874, 557, 301, 302, 232, 558, 234, 2107, 304, 305], 0, [3, 4, 5, 6, 7, 8, 9, 5, 10]]"
+# item = json.loads(s)
+# print([lang.index2word[i] for i in item[0]])
+# print("\n")
+# print([lang.index2word[i] for i in item[2]])
+# print("end")

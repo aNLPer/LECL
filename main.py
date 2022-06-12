@@ -266,7 +266,7 @@ def train(epoch):
         out_1, out_2, out_3, label_rep = model(seq_1, seq_2, seq_3, label_desc)
         # 更新label表示向量
         for idx, val in enumerate(label):
-            LABEL_REPRESENTATION[val] = label_rep[idx]
+            LABEL_REPRESENTATION[val.item()] = label_rep[idx]
         # 计算损失
         loss = train_loss(out_1, out_2, out_3, label_rep)
         train_loss += loss.item()
@@ -275,6 +275,7 @@ def train(epoch):
         # 更新参数
         optimizer_factEnc.step()
         optimizer_accuEnc.step()
+        print("one step end......")
     train_loss = train_loss/len(train_data_loader.dataset)
     train_loss_toral.append(train_loss)
     end = timer()
@@ -304,5 +305,5 @@ def evaluate():
 print("start train...")
 for epoch in range(50):
     train(epoch)
-    evaluate(epoch)
+    # evaluate(epoch)
 

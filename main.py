@@ -282,7 +282,7 @@ def train(epoch):
     print(f"Epoch: {epoch},   Training Loss: {train_loss},  time: {(end-start)/60} min/epoch")
 
 
-def evaluate():
+def evaluate(epoch):
     # 设置模型为评估状态
     model.eval()
     # 记录每个epoch的loss

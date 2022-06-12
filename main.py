@@ -296,6 +296,7 @@ def evaluate(epoch):
             # 得到预测标签 [batch_size]
             preds = predict(outputs)
             acc = torch.sum(preds == torch.tensor(label))/len(label)
+            print("one step end......")
             # 计算损失
             # loss = 0
             # val_loss += loss.item()

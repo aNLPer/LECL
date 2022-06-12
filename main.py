@@ -297,13 +297,13 @@ def evaluate():
             preds = predict(outputs)
             acc = torch.sum(preds == torch.tensor(label))/len(label)
             # 计算损失
-            loss = 0
-            val_loss += loss.item()
-    val_loss = val_loss / len(val_data_loader.dataset)
-    print(f"Epoch: {epoch},   Validation Loss: {val_loss}")
+            # loss = 0
+            # val_loss += loss.item()
+    # val_loss = val_loss / len(val_data_loader.dataset)
+    print(f"Epoch: {epoch},   Accuracy: {acc}")
 
 print("start train...")
 for epoch in range(50):
-    train(epoch)
-    # evaluate(epoch)
+    # train(epoch)
+    evaluate(epoch)
 

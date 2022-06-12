@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
+from utils.commonUtils import Lang
 from timeit import default_timer as timer
 import torch.optim as optim
 import torch

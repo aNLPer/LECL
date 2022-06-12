@@ -144,12 +144,12 @@ val_data = val_dataset(seq_val_tensor, label_val_tensor)
 val_data_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=True)
 
 # 维护label-representation表
-LABEL_REPRESENTATION = torch.randn(size=(len(id2acc), EMBED_DIM),dtype=torch.float32)
+LABEL_REPRESENTATION = torch.zeros(size=(len(id2acc), EMBED_DIM))
 LABEL_REPRESENTATION = LABEL_REPRESENTATION.to(device)
 
 # 实例化模型
 model = Encoder(voc_size=lang.n_words, embed_dim= EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
-model.to(device)
+model = model.to(device)
 # 模型初始化
 
 # 定义损失函数
@@ -238,7 +238,7 @@ def predict(outputs):
         pred = torch.argmax(similarities)
         # batch_size
         preds.append(pred)
-    return torch.tensor(preds)
+    return torch.tensor(preds).to(device)
 
 
 # 优化器
@@ -275,7 +275,6 @@ def train(epoch):
         # 更新参数
         optimizer_factEnc.step()
         optimizer_accuEnc.step()
-        print("one step end......")
     train_loss = train_loss/len(train_data_loader.dataset)
     train_loss_toral.append(train_loss)
     end = timer()
@@ -295,8 +294,9 @@ def evaluate(epoch):
             outputs = model.factEnc(seq)
             # 得到预测标签 [batch_size]
             preds = predict(outputs)
-            acc = torch.sum(preds == torch.tensor(label))/len(label)
-            print("one step end......")
+            a = torch.sum(preds == label)
+            b = len(label)
+            acc = a/b
             # 计算损失
             # loss = 0
             # val_loss += loss.item()
@@ -305,6 +305,6 @@ def evaluate(epoch):
 
 print("start train...")
 for epoch in range(50):
-    # train(epoch)
+    train(epoch)
     evaluate(epoch)
 

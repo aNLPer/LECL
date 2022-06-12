@@ -41,5 +41,3 @@ def getLang(lang_name):
         if count % 5000==0:
             print(f"已统计{count}条数据")
     print(lang.n_words)
-
-getLang("test")

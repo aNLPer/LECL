@@ -1,9 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from timeit import default_timer as timer
-from dataprepare.dataprepare import Lang,getAccus,get_acc_desc
-import torch.nn as nn
-import os
 import torch.optim as optim
 import torch
 import numpy as np
@@ -241,6 +238,7 @@ def evaluate():
             seq_1, seq_2, seq_3, label_desc, label = \
                 seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device), label.to(device)
             # 计算模型的输出
+            model.factEnc()
             # out_1 = factEnc(seq_1)
             # out_2 = factEnc(seq_2)
             # out_3 = factEnc(seq_3)
@@ -260,3 +258,4 @@ def evaluate():
 print("start train...")
 for epoch in range(50):
     train(epoch)
+

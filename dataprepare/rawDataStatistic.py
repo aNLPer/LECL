@@ -1,26 +1,11 @@
 import json
 import os
 import pickle
-from config import PreprocessConfig
-BASE_PATH = PreprocessConfig.data_base_path
+import utils.commonUtils as commonUtils
+BASE_PATH = "../dataset/CAIL-SMALL"
 
 dataPath = os.path.join(BASE_PATH,"CAIL-SMALL")
 fileNames = ["train"]
-# 过滤掉值小于100的项目
-def filter_dict(data_dict):
-    return {k: v for k, v in data_dict.items() if v >= 100}
-
-# 对字典中的每个项目求和
-def sum_dict(data_dict):
-    sum = 0
-    for k,v in data_dict.items():
-        sum+= v
-    return sum
-
-# 字典重置
-def reset_dict(data_dict):
-    return {k: 0 for k, v in data_dict.items()}
-
 
 def func(fileNames, prefix):
     dict_articles = {}  # 法律条款：数量
@@ -43,7 +28,6 @@ def func(fileNames, prefix):
                         dict_accusation[example_accusation[0]] += 1
                     else:
                         dict_accusation.update({example_accusation[0]: 1})
-            f.close()
         print(f'The {fileNames[i]} dataset is read over')
     # 将法律条款统计结果序列化
     f = open(f"./{prefix}_articles2num.pkl", "wb")
@@ -66,13 +50,13 @@ def func(fileNames, prefix):
 
 
 def func1(dict_articles, dict_accusation):
-    articles_sum = sum_dict(dict_articles)
-    accusation_sum = sum_dict(dict_accusation)
+    articles_sum = commonUtils.sum_dict(dict_articles)
+    accusation_sum = commonUtils.sum_dict(dict_accusation)
     f1 = open("../dataset/CAIL-SMALL/data_train_filtered.json", "w", encoding="utf-8")
 
     while articles_sum != accusation_sum:
-        dict_accusation = reset_dict(dict_accusation)
-        dict_articles = reset_dict(dict_articles)
+        dict_accusation = commonUtils.reset_dict(dict_accusation)
+        dict_articles = commonUtils.reset_dict(dict_articles)
         for i in range(len(fileNames)):
             with open(os.path.join(dataPath, f"data_{fileNames[i]}.json"), 'r', encoding='utf-8') as f:
                 for line in f:
@@ -99,11 +83,11 @@ def func1(dict_articles, dict_accusation):
         print(len(dict_articles))
         print(len(dict_accusation))
 
-        dict_articles = filter_dict(dict_articles)
-        dict_accusation = filter_dict(dict_accusation)
+        dict_articles = commonUtils.filter_dict(dict_articles)
+        dict_accusation = commonUtils.filter_dict(dict_accusation, 100)
 
-        articles_sum = sum_dict(dict_articles)
-        accusation_sum = sum_dict(dict_accusation)
+        articles_sum = commonUtils.sum_dict(dict_articles)
+        accusation_sum = commonUtils.sum_dict(dict_accusation)
 
         print(dict_articles)
         print('articles_num: ' + str(len(dict_articles)))
@@ -156,13 +140,13 @@ dict_articles = pickle.load(f)
 
 f.close()
 
-print(sum_dict(dict_articles))
-print(sum_dict(dict_accusations))
+print(commonUtils.sum_dict(dict_articles))
+print(commonUtils.sum_dict(dict_accusations))
 
 print("--------------------------过滤掉频次小于100的条款和指控-----------------------------")
 # 过滤掉频次小于100的条款和指控
-dict_articles = filter_dict(dict_articles)
-dict_accusations = filter_dict(dict_accusations)
+dict_articles = commonUtils.filter_dict(dict_articles)
+dict_accusations = commonUtils.filter_dict(dict_accusations)
 
 
 

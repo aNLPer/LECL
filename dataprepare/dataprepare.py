@@ -4,67 +4,12 @@ import pickle
 import re
 import json
 import thulac
+import utils.commonUtils as commonUtils
+from utils.commonUtils import Lang
 import numpy as np
 import operator
 
 BATH_DATA_PATH = "..\dataset\CAIL-SMALL"
-
-class Lang:
-    # 语料库对象
-    def __init__(self, name):
-        self.name = name
-        self.word2index = {}
-        self.word2count = {}
-        self.index2word = {0:"UNK", 1:"SOS", 2:"EOS"}
-        # 词汇表大小
-        self.n_words = 3
-
-    def addSentence(self, sentence):
-        for word in sentence:
-            self.addWord(word)
-
-    def addWord(self, word):
-        if word not in self.word2index:
-            self.word2index[word] = self.n_words
-            self.word2count[word] = 1
-            self.index2word[self.n_words] = word
-            self.n_words += 1
-        else:
-            self.word2count[word] += 1
-
-# 加载停用词表、特殊符号表、标点
-def get_filter_symbols(filepath):
-    '''
-    根据mode加载标点、特殊词或者停用词
-    :param mode:
-    :return:list
-    '''
-    return list(set([line.strip() for line in open(filepath, 'r', encoding='utf-8').readlines()]))
-
-# law内容过滤
-def filterStr(law):
-    # 删除括号及括号内的内容
-    pattern_bracket = re.compile(r"[<《【\[(（〔].*?[〕）)\]】》>]")
-    law = pattern_bracket.sub("",law)
-
-    # 删除第一个标点之前的内容
-    pattern_head_content = re.compile(r".*?[，：。,:.]")
-    head_content = pattern_head_content.match(law)
-    if head_content is not None:
-        head_content_span = head_content.span()
-        law = law[head_content_span[1]:]
-
-    return law
-
-# 生成acc2desc字典
-def get_acc_desc(file_path):
-    acc2des = {}
-    with open(file_path, "r", encoding="utf-8") as f:
-        for line in f:
-            dict = json.loads(line)
-            if dict["accusation"] not in acc2des:
-                acc2des[dict["accusation"]] = dict["desc"]
-    return acc2des
 
 # 构造数据集
 def getData(case_path, acc2desc):
@@ -83,11 +28,11 @@ def getData(case_path, acc2desc):
     # 加载分词器
     thu = thulac.thulac(user_dict="Thuocl_seg.txt", seg_only=True)
     # 加载特殊符号
-    special_symbols = get_filter_symbols("special_symbol.txt")
+    special_symbols = commonUtils.get_filter_symbols("special_symbol.txt")
     # 加载停用词表
-    stopwords = get_filter_symbols("stop_word.txt")
+    stopwords = commonUtils.get_filter_symbols("stop_word.txt")
     # 加载标点
-    punctuations = get_filter_symbols("punctuation.txt")
+    punctuations = commonUtils.get_filter_symbols("punctuation.txt")
     fw = open("..\dataset\CAIL-SMALL\data_train_preprocessed.txt", "w", encoding="utf-8")
     count = 0
     with open(case_path, "r", encoding="utf-8") as f:
@@ -96,7 +41,7 @@ def getData(case_path, acc2desc):
             item = [] # 单条训练数据
             example = json.loads(line)
             # 过滤law article内容
-            example_fact = filterStr(example["fact"])
+            example_fact = commonUtils.filterStr(example["fact"])
             # 分词,去除特殊符号
             example_fact_1 = [word for word in thu.cut(example_fact, text=True).split(" ") if word not in special_symbols]
             example_fact_1 = [re.sub(r"\d+","x", word) for word in example_fact_1]
@@ -291,7 +236,7 @@ def load_accusation_classified(file_path):
 if __name__=="__main__":
     # # 生成训练数据集
     data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")
-    acc_desc = get_acc_desc("accusation_description.json")
+    acc_desc = commonUtils.get_acc_desc("accusation_description.json")
     print("start processing data...")
     getData(data_path, acc_desc)
     print("data processing end.")

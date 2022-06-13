@@ -12,8 +12,8 @@ import json
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 24
-LR_ACCU_ENC = 0.001
-LR_FACT_ENC = 0.005
+LR_ACCU_ENC = 0.01
+LR_FACT_ENC = 0.05
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
@@ -142,15 +142,15 @@ label_val_tensor = torch.from_numpy(label_val)
 
 val_data = val_dataset(seq_val_tensor, label_val_tensor)
 val_data_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=True)
-
-# 维护label-representation表
-LABEL_REPRESENTATION = torch.zeros(size=(len(id2acc), EMBED_DIM))
+#
+# # 维护label-representation表
+LABEL_REPRESENTATION = torch.randn(size=(len(id2acc), EMBED_DIM))
 LABEL_REPRESENTATION = LABEL_REPRESENTATION.to(device)
 
 # 实例化模型
 model = Encoder(voc_size=lang.n_words, embed_dim= EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
 model = model.to(device)
-# 模型初始化
+# # 模型初始化
 
 # 定义损失函数
 def train_loss_fun(out_1, out_2, out_3, label_rep):
@@ -304,7 +304,7 @@ def evaluate(epoch):
     print(f"Epoch: {epoch},   Accuracy: {acc}")
 
 print("start train...")
-for epoch in range(50):
+for epoch in range(EPOCH):
     train(epoch)
     evaluate(epoch)
 

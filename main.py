@@ -18,7 +18,7 @@ SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
 LABEL_DESC_MAX_LENGTH = 90 # 实际统计为83
-TEMPER = 0.07
+TEMPER = 0.01
 # 加载语料库信息
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
 lang = pickle.load(f)
@@ -305,6 +305,6 @@ def evaluate(epoch):
 
 print("start train...")
 for epoch in range(EPOCH):
-    train(epoch)
+    #train(epoch)
     evaluate(epoch)
 

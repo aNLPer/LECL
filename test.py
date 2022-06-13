@@ -3,16 +3,10 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-from timeit import default_timer as timer
 
-start = timer()
-# ...
-end = timer()
-print(end - start)
-
-
-
-
+a = torch.tensor([[[1,2,3],[1,2,3]],
+                  [[2,2,3],[1,2,3]]],dtype=torch.float32)
+print(torch.mean(a, dim=0))
 
 
 

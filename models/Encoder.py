@@ -22,7 +22,7 @@ class FactEnc(nn.Module):
         # [ seq_length, batch_size, d_model] -> [ seq_length, batch_size, d_model]
         x = self.Bert(x)
         # [ seq_length, batch_size, d_model] -> [batch_size, d_model]
-        x = torch.sum(x, dim=0)
+        x = torch.mean(x, dim=0)
         # [batch_size, d_model]
         out = self.linear(x)
         return out

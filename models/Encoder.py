@@ -35,7 +35,11 @@ class AccuEnc(nn.Module):
         self.hidden_size = hidden_size
         self.embedding = None
         self.gru = nn.GRU(input_size, self.hidden_size, bidirectional=True)
-        self.linear = nn.Linear(self.hidden_size*2, hidden_size)
+        self.linear = nn.Sequential(
+            nn.Linear(self.hidden_size * 2, hidden_size),
+            nn.BatchNorm1d(hidden_size),
+            nn.ReLU()
+        )
 
     def forward(self, x): # x [seq_length, batch_size]
         # [seq_length, batch_size] -> [seq_length, batch_size, d_model]

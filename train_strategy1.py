@@ -1,16 +1,16 @@
 """
 先对accuEncoder经过几轮训练
-
+再一起训练
 """
-
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from timeit import default_timer as timer
 import torch.optim as optim
+from utils.commonUtils import Lang
 import torch
 import numpy as np
 import pickle
-from models.Encoder import Encoder
+from models.Encoder import Encoder, FactEnc, AccuEnc
 import json
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -86,6 +86,17 @@ class val_dataset(Dataset):
     def __len__(self):
         return len(self.seq)
 
+def desc_loader(desc, batch_size):
+    """
+    指控描述数据集
+    """
+    num_descs = len(desc)
+    desc_idxs = list(range(num_descs))
+    np.random.shuffle(desc_idxs)
+    for i in range(0, num_descs, batch_size):
+        idxs = desc_idxs[i: min(i + batch_size, num_descs)]
+        yield [desc[i] for i in idxs]
+
 # BERT模型输入序列填充和截取
 def pad_and_cut(data, length):
     """
@@ -131,3 +142,17 @@ def prepare_valid_data():
             seq.append(item[0])
             label.append([item[1]])
     return np.array(seq),np.array(label)
+
+
+
+# 实例化模型
+model = Encoder(voc_size=lang.n_words, embed_dim=EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
+model = model.to(device)
+
+# 优化器
+optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
+optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
+
+def pretrain_accuEcoder(epoch):
+    for examples in desc_loader(accid2descidx, batch_size=3):
+        pass

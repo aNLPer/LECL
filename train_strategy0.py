@@ -252,7 +252,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         sim_item += x_out3[i]
         sim_item += x_label_rep[i]
         # 不相似样本
-        for j in range(BATCH_SIZE):
+        for j in range(batch_size):
             if j == i:
                 continue
             if x_out1[j].item() < M:
@@ -325,9 +325,6 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
 
     return sim_item+dissim_item
 
-
-def valid_lass_func():
-    pass
 
 def predict(outputs):
     """

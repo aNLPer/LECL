@@ -153,7 +153,7 @@ model = model.to(device)
 # # 模型初始化
 
 # 定义损失函数
-def train_loss_fun(out_1, out_2, out_3, label_rep):
+def train_cosloss_fun(out_1, out_2, out_3, label_rep):
     """
     损失函数
     :param out_1: tensor
@@ -219,6 +219,40 @@ def train_loss_fun(out_1, out_2, out_3, label_rep):
 
     return loss_out1 + loss_out2 + loss_out3
 
+def train_distloss_fun(out_1, out_2, out_3, label_rep):
+    """
+        损失函数
+        :param out_1: tensor
+        :param out_2: tensor
+        :param out_3: tensor
+        :param label_rep tensor
+        :return: loss scalar
+        """
+    batch_size = out_1.shape[0]
+    # out_1 样本损失函数
+    loss_out1 = 0
+    for i in range(batch_size):
+        # 相似pair: out_1[i], out_2[i], out_3[i], label_rep[i]
+
+
+        # [batch_size, d_model]
+        x = out_1[i].repeat(batch_size, 1)
+        []
+        # [batch_size]
+        x_out1 = torch.cosine_similarity(x, out_1, dim=1) / TEMPER
+        # [batch_size]
+        x_out2 = torch.cosine_similarity(x, out_2, dim=1) / TEMPER
+        # [batch_size]
+        x_out3 = torch.cosine_similarity(x, out_3, dim=1) / TEMPER
+        # [batch_size]
+        x_label_rep = torch.cosine_similarity(x, label_rep, dim=1) / TEMPER
+
+        molecule = torch.sum(torch.tensor([torch.exp(x_out2[i]), torch.exp(x_out3[i]), torch.exp(x_label_rep[i])]))
+        denominator = torch.sum(torch.exp(x_out1)) - torch.exp(x_out1[i]) + torch.sum(torch.exp(x_out2)) + torch.sum(
+            torch.exp(x_out3)) + torch.sum(torch.exp(x_label_rep))
+        loss_out1 -= torch.log(molecule / denominator)
+
+
 def valid_lass_func():
     pass
 
@@ -236,9 +270,6 @@ def predict(outputs):
         similarities = torch.exp(torch.cosine_similarity(reps, LABEL_REPRESENTATION, dim=1))
         # max similarity corresponding index
         pred = torch.argmax(similarities)
-        print(LABEL_REPRESENTATION[pred.item()])
-        print(rep)
-        print(torch.cosine_similarity(rep, LABEL_REPRESENTATION[pred.item()], dim=0))
         # batch_size
         preds.append(pred)
     return torch.tensor(preds).to(device)
@@ -271,7 +302,7 @@ def train(epoch):
         for idx, val in enumerate(label):
             LABEL_REPRESENTATION[val.item()] = label_rep[idx]
         # 计算损失
-        loss = train_loss_fun(out_1, out_2, out_3, label_rep)
+        loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
         train_loss += loss.item()
         # 计算梯度
         loss.backward()
@@ -297,9 +328,9 @@ def evaluate(epoch):
             outputs = model.factEnc(seq)
             # 得到预测标签 [batch_size]
             preds = predict(outputs)
-            acc = torch.sum(preds == label)/len(label)
+            label = label.squeeze()
+            acc = torch.sum(torch.eq(preds, label))/len(label)
             # 计算损失
-
             # loss = 0
             # val_loss += loss.item()
     # val_loss = val_loss / len(val_data_loader.dataset)
@@ -307,6 +338,6 @@ def evaluate(epoch):
 
 print("start train...")
 for epoch in range(EPOCH):
-    # train(epoch)
+    train(epoch)
     evaluate(epoch)
 

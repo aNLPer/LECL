@@ -310,22 +310,18 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
                 dissim_item += (M - x_label_rep[j])
 
     # out_4 样本损失
-    # for i in range(batch_size):
-    #     # [batch_size, d_model]
-    #     x = label_rep[i].expand(batch_size, 1)
-    #     # [batch_size]
-    #     x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
-    #
-    #     # 相似样本
-    #     sim_item += x_label_rep[i]
-    #     # 不相似样本
-    #     for j in range(BATCH_SIZE):
-    #         if j == i:
-    #             continue
-    #         if x_out3[j].item() < M:
-    #             dissim_item += (M - x_out3[j])
-    #         if x_label_rep[j].item() < M:
-    #             dissim_item += (M - x_label_rep[j])
+    for i in range(batch_size):
+        # [batch_size, d_model]
+        x = label_rep[i].expand(batch_size, 1)
+        # [batch_size]
+        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
+
+        # 不相似样本
+        for j in range(i+1, BATCH_SIZE):
+            if label[j].item() == label[i].item():
+                continue
+            if x_label_rep[j].item() < M:
+                dissim_item += (M - x_label_rep[j])
 
     return sim_item+dissim_item
 
@@ -382,7 +378,7 @@ def train(epoch, train_mode):
         if (train_mode == "cosine"):
             loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
         if (train_mode == "dist"):
-            loss = train_distloss_fun(out_1, out_2, out_3, label_rep)
+            loss = train_distloss_fun(out_1, out_2, out_3, label_rep, label)
         train_loss += loss.item()
         # 计算梯度
         loss.backward()
@@ -418,6 +414,6 @@ def evaluate(epoch):
 
 print("start train...")
 for epoch in range(EPOCH):
-    train(epoch)
+    train(epoch, train_mode="dist")
     evaluate(epoch)
 

@@ -1,6 +1,5 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
-from utils.commonUtils import Lang
 from timeit import default_timer as timer
 import torch.optim as optim
 import torch
@@ -237,7 +236,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
     for i in range(batch_size):
         # 相似pair: out_1[i], out_2[i], out_3[i], label_rep[i]
         # [batch_size, d_model]
-        x = out_1[i].expand(batch_size, 1)
+        x = out_1[i].expand(batch_size, -1)
         # [batch_size]
         x_out1 = torch.sqrt(torch.sum((x - out_1) ** 2, dim=1))
         # [batch_size]
@@ -267,7 +266,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
     # out_2 样本损失
     for i in range(batch_size):
         # [batch_size, d_model]
-        x = out_2[i].expand(batch_size, 1)
+        x = out_2[i].expand(batch_size, -1)
         # [batch_size]
         x_out2 = torch.sqrt(torch.sum((x - out_2) ** 2, dim=1))
         # [batch_size]
@@ -292,7 +291,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
     # out_3 样本损失
     for i in range(batch_size):
         # [batch_size, d_model]
-        x = out_3[i].expand(batch_size, 1)
+        x = out_3[i].expand(batch_size, -1)
         # [batch_size]
         x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1))
         # [batch_size]
@@ -312,7 +311,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
     # out_4 样本损失
     for i in range(batch_size):
         # [batch_size, d_model]
-        x = label_rep[i].expand(batch_size, 1)
+        x = label_rep[i].expand(batch_size, -1)
         # [batch_size]
         x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
 

@@ -9,10 +9,9 @@ class FactEnc(nn.Module):
         self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=4)
         self.linear = nn.Sequential(nn.Linear(embedding_dim, 4*embedding_dim),
                                     nn.BatchNorm1d(4*embedding_dim),
-                                    nn.ReLU(),
                                     nn.Linear(4*embedding_dim, embedding_dim),
-                                    nn.BatchNorm1d(embedding_dim),
-                                    nn.ReLU())
+                                    nn.BatchNorm1d(embedding_dim)
+                                    )
 
     def forward(self, x):
         # [batch_size, seq_length] -> [seq_length, batch_size]

@@ -233,9 +233,12 @@ def predict(outputs):
         # [112, EMBED_DIM]
         reps = rep.repeat(len(LABEL_REPRESENTATION),1)
         # [112]
-        similarities = torch.exp(torch.cosine_similarity(reps, LABEL_REPRESENTATION, dim=1)/TEMPER)
+        similarities = torch.exp(torch.cosine_similarity(reps, LABEL_REPRESENTATION, dim=1))
         # max similarity corresponding index
         pred = torch.argmax(similarities)
+        print(LABEL_REPRESENTATION[pred.item()])
+        print(rep)
+        print(torch.cosine_similarity(rep, LABEL_REPRESENTATION[pred.item()], dim=0))
         # batch_size
         preds.append(pred)
     return torch.tensor(preds).to(device)
@@ -294,10 +297,9 @@ def evaluate(epoch):
             outputs = model.factEnc(seq)
             # 得到预测标签 [batch_size]
             preds = predict(outputs)
-            a = torch.sum(preds == label)
-            b = len(label)
-            acc = a/b
+            acc = torch.sum(preds == label)/len(label)
             # 计算损失
+
             # loss = 0
             # val_loss += loss.item()
     # val_loss = val_loss / len(val_data_loader.dataset)
@@ -305,6 +307,6 @@ def evaluate(epoch):
 
 print("start train...")
 for epoch in range(EPOCH):
-    train(epoch)
+    # train(epoch)
     evaluate(epoch)
 

@@ -227,12 +227,6 @@ def load_accusation_classified(file_path):
 
     return category2accus, accu2category
 
-
-
-
-
-
-
 if __name__=="__main__":
     # # 生成训练数据集
     data_path = os.path.join(BATH_DATA_PATH, "data_train_filtered.json")

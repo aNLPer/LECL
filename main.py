@@ -167,7 +167,7 @@ def train_cosloss_fun(out_1, out_2, out_3, label_rep):
     loss_out1 = 0
     for i in range(batch_size):
         # [batch_size, d_model]
-        x = out_1[i].repeat(batch_size, 1)
+        x = out_1[i].expand(batch_size, -1)
         # [batch_size]
         x_out1 = torch.cosine_similarity(x, out_1, dim=1)/TEMPER
         # [batch_size]
@@ -185,7 +185,7 @@ def train_cosloss_fun(out_1, out_2, out_3, label_rep):
     loss_out2 = 0
     for i in range(batch_size):
         # [batch_size, d_model]
-        x = out_2[i].repeat(batch_size, 1)
+        x = out_2[i].expand(batch_size, -1)
         # [batch_size]
         x_out1 = torch.cosine_similarity(x, out_1, dim=1) / TEMPER
         # [batch_size]
@@ -203,7 +203,7 @@ def train_cosloss_fun(out_1, out_2, out_3, label_rep):
     loss_out3 = 0
     for i in range(batch_size):
         # [batch_size, d_model]
-        x = out_3[i].repeat(batch_size, 1)
+        x = out_3[i].expand(batch_size, -1)
         # [batch_size]
         x_out1 = torch.cosine_similarity(x, out_1, dim=1) / TEMPER
         # [batch_size]
@@ -233,20 +233,18 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep):
     loss_out1 = 0
     for i in range(batch_size):
         # 相似pair: out_1[i], out_2[i], out_3[i], label_rep[i]
-
-
         # [batch_size, d_model]
-        x = out_1[i].repeat(batch_size, 1)
-        []
+        x = out_1[i].expand(batch_size, 1)
         # [batch_size]
-        x_out1 = torch.cosine_similarity(x, out_1, dim=1) / TEMPER
+        x_out1 = torch.sqrt(torch.sum((x - out_1) ** 2, dim=1))
         # [batch_size]
-        x_out2 = torch.cosine_similarity(x, out_2, dim=1) / TEMPER
+        x_out2 = torch.sqrt(torch.sum((x - out_2) ** 2, dim=1))
         # [batch_size]
-        x_out3 = torch.cosine_similarity(x, out_3, dim=1) / TEMPER
+        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1))
         # [batch_size]
-        x_label_rep = torch.cosine_similarity(x, label_rep, dim=1) / TEMPER
+        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
 
+        x_out1[i] + x_out2[i] + x_out3[i] + x_label_rep[i]
         molecule = torch.sum(torch.tensor([torch.exp(x_out2[i]), torch.exp(x_out3[i]), torch.exp(x_label_rep[i])]))
         denominator = torch.sum(torch.exp(x_out1)) - torch.exp(x_out1[i]) + torch.sum(torch.exp(x_out2)) + torch.sum(
             torch.exp(x_out3)) + torch.sum(torch.exp(x_label_rep))

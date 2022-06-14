@@ -53,7 +53,6 @@ class AccuEnc(nn.Module):
         outputs = self.linear(outputs)
         return outputs
 
-
 class Encoder(nn.Module):
     def __init__(self, voc_size, embed_dim, input_size, hidden_size):
         super(Encoder, self).__init__()

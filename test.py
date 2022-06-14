@@ -3,8 +3,16 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-a = torch.tensor([1,2,3])
-print(a.expand(4,-1))
+
+print(4-torch.tensor([1,2,3]))
 
 
+t = torch.tensor([1,2,3,4,5])
+print(t[0:])
+print(t[2:])
 
+for i in range(3, 5):
+    print(i)
+
+for i in range(3, 5):
+    print(i)

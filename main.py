@@ -19,6 +19,8 @@ EMBED_DIM = 256
 EPOCH = 100
 LABEL_DESC_MAX_LENGTH = 90 # 实际统计为83
 TEMPER = 1
+M = 10 # distLoss的半径
+
 # 加载语料库信息
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
 lang = pickle.load(f)
@@ -178,7 +180,7 @@ def train_cosloss_fun(out_1, out_2, out_3, label_rep):
         x_label_rep = torch.cosine_similarity(x, label_rep, dim=1)/TEMPER
 
         molecule = torch.sum(torch.tensor([torch.exp(x_out2[i]), torch.exp(x_out3[i]), torch.exp(x_label_rep[i])]))
-        denominator = torch.sum(torch.exp(x_out1)) - torch.exp(x_out1[i]) + torch.sum(torch.exp(x_out2)) + torch.sum(torch.exp(x_out3)) + torch.sum(torch.exp(x_label_rep))
+        denominator = torch.sum(torch.exp(x_out1[0:i])) - torch.exp(x_out1[i]) + torch.sum(torch.exp(x_out2)) + torch.sum(torch.exp(x_out3)) + torch.sum(torch.exp(x_label_rep))
         loss_out1 -= torch.log(molecule/denominator)
 
     # out_2 样本损失函数
@@ -219,7 +221,7 @@ def train_cosloss_fun(out_1, out_2, out_3, label_rep):
 
     return loss_out1 + loss_out2 + loss_out3
 
-def train_distloss_fun(out_1, out_2, out_3, label_rep):
+def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
     """
         损失函数
         :param out_1: tensor
@@ -229,8 +231,9 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep):
         :return: loss scalar
         """
     batch_size = out_1.shape[0]
+    sim_item = 0
+    dissim_item = 0
     # out_1 样本损失函数
-    loss_out1 = 0
     for i in range(batch_size):
         # 相似pair: out_1[i], out_2[i], out_3[i], label_rep[i]
         # [batch_size, d_model]
@@ -244,11 +247,87 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep):
         # [batch_size]
         x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
 
-        x_out1[i] + x_out2[i] + x_out3[i] + x_label_rep[i]
-        molecule = torch.sum(torch.tensor([torch.exp(x_out2[i]), torch.exp(x_out3[i]), torch.exp(x_label_rep[i])]))
-        denominator = torch.sum(torch.exp(x_out1)) - torch.exp(x_out1[i]) + torch.sum(torch.exp(x_out2)) + torch.sum(
-            torch.exp(x_out3)) + torch.sum(torch.exp(x_label_rep))
-        loss_out1 -= torch.log(molecule / denominator)
+        # 相似样本
+        sim_item += x_out2[i]
+        sim_item += x_out3[i]
+        sim_item += x_label_rep[i]
+        # 不相似样本
+        for j in range(BATCH_SIZE):
+            if j == i:
+                continue
+            if x_out1[j].item() < M:
+                dissim_item += (M-x_out1[j])
+            if x_out2[j].item() < M:
+                dissim_item += (M-x_out2[j])
+            if x_out3[j].item() < M:
+                dissim_item += (M-x_out3[j])
+            if x_label_rep[j].item() < M:
+                dissim_item += (M-x_label_rep[j])
+
+    # out_2 样本损失
+    for i in range(batch_size):
+        # [batch_size, d_model]
+        x = out_2[i].expand(batch_size, 1)
+        # [batch_size]
+        x_out2 = torch.sqrt(torch.sum((x - out_2) ** 2, dim=1))
+        # [batch_size]
+        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1))
+        # [batch_size]
+        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
+
+        # 相似样本
+        sim_item += x_out3[i]
+        sim_item += x_label_rep[i]
+        # 不相似样本
+        for j in range(BATCH_SIZE):
+            if j == i:
+                continue
+            if x_out2[j].item() < M:
+                dissim_item += (M - x_out2[j])
+            if x_out3[j].item() < M:
+                dissim_item += (M - x_out3[j])
+            if x_label_rep[j].item() < M:
+                dissim_item += (M - x_label_rep[j])
+
+    # out_3 样本损失
+    for i in range(batch_size):
+        # [batch_size, d_model]
+        x = out_3[i].expand(batch_size, 1)
+        # [batch_size]
+        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1))
+        # [batch_size]
+        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
+
+        # 相似样本
+        sim_item += x_label_rep[i]
+        # 不相似样本
+        for j in range(BATCH_SIZE):
+            if j == i:
+                continue
+            if x_out3[j].item() < M:
+                dissim_item += (M - x_out3[j])
+            if x_label_rep[j].item() < M:
+                dissim_item += (M - x_label_rep[j])
+
+    # out_4 样本损失
+    # for i in range(batch_size):
+    #     # [batch_size, d_model]
+    #     x = label_rep[i].expand(batch_size, 1)
+    #     # [batch_size]
+    #     x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
+    #
+    #     # 相似样本
+    #     sim_item += x_label_rep[i]
+    #     # 不相似样本
+    #     for j in range(BATCH_SIZE):
+    #         if j == i:
+    #             continue
+    #         if x_out3[j].item() < M:
+    #             dissim_item += (M - x_out3[j])
+    #         if x_label_rep[j].item() < M:
+    #             dissim_item += (M - x_label_rep[j])
+
+    return sim_item+dissim_item
 
 
 def valid_lass_func():
@@ -279,7 +358,7 @@ optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
 
 train_loss_toral = []
 val_loss_total = []
-def train(epoch):
+def train(epoch, train_mode):
     # 设置模型为训练状态
     model.train()
     # 记录每个epoch的loss
@@ -300,7 +379,10 @@ def train(epoch):
         for idx, val in enumerate(label):
             LABEL_REPRESENTATION[val.item()] = label_rep[idx]
         # 计算损失
-        loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
+        if (train_mode == "cosine"):
+            loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
+        if (train_mode == "dist"):
+            loss = train_distloss_fun(out_1, out_2, out_3, label_rep)
         train_loss += loss.item()
         # 计算梯度
         loss.backward()

@@ -151,7 +151,7 @@ LABEL_REPRESENTATION = torch.randn(size=(len(id2acc), EMBED_DIM))
 LABEL_REPRESENTATION = LABEL_REPRESENTATION.to(device)
 
 # 实例化模型
-model = Encoder(voc_size=lang.n_words, embed_dim= EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
+model = Encoder(voc_size=lang.n_words, embed_dim=EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
 model = model.to(device)
 # # 模型初始化
 
@@ -302,7 +302,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # 相似样本
         sim_item += x_label_rep[i]
         # 不相似样本
-        for j in range(BATCH_SIZE):
+        for j in range(batch_size):
             if j == i:
                 continue
             if x_out3[j].item() < M:
@@ -318,7 +318,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
 
         # 不相似样本
-        for j in range(i+1, BATCH_SIZE):
+        for j in range(i+1, batch_size):
             if label[j].item() == label[i].item():
                 continue
             if x_label_rep[j].item() < M:

@@ -18,7 +18,6 @@ class FactEnc(nn.Module):
     def forward(self, x):
         # [batch_size, seq_length] -> [seq_length, batch_size]
         x = torch.transpose(x, dim0=0, dim1=1)
-        x = x.long()
         # [seq_length,batch_size] -> [ seq_length, batch_size, d_model]
         x = self.embedding(x)
         # [ seq_length, batch_size, d_model] -> [ seq_length, batch_size, d_model]
@@ -45,7 +44,6 @@ class AccuEnc(nn.Module):
 
     def forward(self, x): # x [seq_length, batch_size]
         # [seq_length, batch_size] -> [seq_length, batch_size, d_model]
-        x = x.long()
         x = self.embedding(x)
         # [bidirectional*n_layer=2, batch_size, d_model]
         h_0 = torch.zeros(size=(2, x.shape[1], self.hidden_size)).to(self.device)

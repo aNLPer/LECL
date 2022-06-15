@@ -4,7 +4,7 @@ import torch.nn as nn
 class FactEnc(nn.Module):
     def __init__(self, voc_size, embedding_dim):
         super(FactEnc, self).__init__()
-        self.embedding = nn.Embedding(voc_size, embedding_dim=embedding_dim)
+        self.embedding = nn.Embedding(voc_size, embedding_dim=embedding_dim, padding_idx=0)
         self.enc_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=4)
         self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=2)
         self.linear = nn.Sequential(nn.Linear(embedding_dim, 4*embedding_dim),

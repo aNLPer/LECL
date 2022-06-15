@@ -9,5 +9,5 @@ x = torch.tensor([[2,4,3],
 t1 = torch.tensor([[1,2,3],
                    [1,2,3]], dtype=torch.float32)
 print((x-t1))
-print(0.5*(x-t1)**2)
+print((x-t1)**2)
 print(torch.sum(0.5*(x-t1)**2,dim=1))

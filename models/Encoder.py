@@ -6,16 +6,19 @@ class FactEnc(nn.Module):
         super(FactEnc, self).__init__()
         self.embedding = nn.Embedding(voc_size, embedding_dim=embedding_dim)
         self.enc_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=4)
-        self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=4)
+        self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=2)
         self.linear = nn.Sequential(nn.Linear(embedding_dim, 4*embedding_dim),
                                     nn.BatchNorm1d(4*embedding_dim),
+                                    nn.ReLU(),
                                     nn.Linear(4*embedding_dim, embedding_dim),
-                                    nn.BatchNorm1d(embedding_dim)
+                                    nn.BatchNorm1d(embedding_dim),
+                                    nn.ReLU()
                                     )
 
     def forward(self, x):
         # [batch_size, seq_length] -> [seq_length, batch_size]
         x = torch.transpose(x, dim0=0, dim1=1)
+        x = x.long()
         # [seq_length,batch_size] -> [ seq_length, batch_size, d_model]
         x = self.embedding(x)
         # [ seq_length, batch_size, d_model] -> [ seq_length, batch_size, d_model]
@@ -42,6 +45,7 @@ class AccuEnc(nn.Module):
 
     def forward(self, x): # x [seq_length, batch_size]
         # [seq_length, batch_size] -> [seq_length, batch_size, d_model]
+        x = x.long()
         x = self.embedding(x)
         # [bidirectional*n_layer=2, batch_size, d_model]
         h_0 = torch.zeros(size=(2, x.shape[1], self.hidden_size)).to(self.device)

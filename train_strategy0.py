@@ -1,5 +1,6 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
+from torchinfo import summary
 from utils.commonUtils import Lang
 from tensorboardX import SummaryWriter
 from timeit import default_timer as timer
@@ -20,7 +21,8 @@ EMBED_DIM = 256
 EPOCH = 100
 LABEL_DESC_MAX_LENGTH = 90 # 实际统计为83
 TEMPER = 1
-M = 10 # distLoss的半径
+DIST_SCALE = 10
+M = 1 # distLoss的半径
 
 # 加载语料库信息
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")
@@ -152,6 +154,8 @@ LABEL_REPRESENTATION = LABEL_REPRESENTATION.to(device)
 
 # 实例化模型
 model = Encoder(voc_size=lang.n_words, embed_dim=EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
+summary(model.factEnc, (BATCH_SIZE, SEQ_MAX_LENGTH))
+summary(model.accuEnc, (90, BATCH_SIZE))
 model = model.to(device)
 # # 模型初始化
 
@@ -240,13 +244,13 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = out_1[i].expand(batch_size, -1)
         # [batch_size]
-        x_out1 = torch.sqrt(torch.sum((x - out_1) ** 2, dim=1))
+        x_out1 = torch.sqrt(torch.sum((x - out_1) ** 2, dim=1))/ DIST_SCALE
         # [batch_size]
-        x_out2 = torch.sqrt(torch.sum((x - out_2) ** 2, dim=1))
+        x_out2 = torch.sqrt(torch.sum((x - out_2) ** 2, dim=1)) / DIST_SCALE
         # [batch_size]
-        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1))
+        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1)) / DIST_SCALE
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
+        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1)) / DIST_SCALE
 
         # 相似样本
         sim_item += x_out2[i]
@@ -270,11 +274,11 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = out_2[i].expand(batch_size, -1)
         # [batch_size]
-        x_out2 = torch.sqrt(torch.sum((x - out_2) ** 2, dim=1))
+        x_out2 = torch.sqrt(torch.sum((x - out_2) ** 2, dim=1)) / DIST_SCALE
         # [batch_size]
-        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1))
+        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1)) / DIST_SCALE
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
+        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1)) / DIST_SCALE
 
         # 相似样本
         sim_item += x_out3[i]
@@ -295,9 +299,9 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = out_3[i].expand(batch_size, -1)
         # [batch_size]
-        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1))
+        x_out3 = torch.sqrt(torch.sum((x - out_3) ** 2, dim=1)) / DIST_SCALE
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
+        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1)) / DIST_SCALE
 
         # 相似样本
         sim_item += x_label_rep[i]
@@ -315,7 +319,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = label_rep[i].expand(batch_size, -1)
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1))
+        x_label_rep = torch.sqrt(torch.sum((x - label_rep) ** 2, dim=1)) / DIST_SCALE
 
         # 不相似样本
         for j in range(i+1, batch_size):

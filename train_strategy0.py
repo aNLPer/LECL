@@ -14,8 +14,8 @@ import json
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 24
-LR_ACCU_ENC = 0.001
-LR_FACT_ENC = 0.005
+LR_ACCU_ENC = 0.0
+LR_FACT_ENC = 0.0
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
@@ -139,7 +139,7 @@ seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH))
 label_tensor = torch.from_numpy(label_train)
 
 train_data = train_dataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor)
-train_data_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
+train_data_loader = DataLoader(train_data, batch_size=24, shuffle=True)
 
 seq, label_val = prepare_valid_data()
 seq_val_tensor = torch.from_numpy(pad_and_cut(seq, SEQ_MAX_LENGTH))
@@ -356,6 +356,7 @@ optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
 
 train_loss_toral = []
 val_loss_total = []
+
 def train(epoch, train_mode):
     # 设置模型为训练状态
     model.train()
@@ -374,14 +375,16 @@ def train(epoch, train_mode):
         # 计算模型的输出 [batch_size, d_model]
         out_1, out_2, out_3, label_rep = model(seq_1, seq_2, seq_3, label_desc)
         # 更新label表示向量
-        for idx, val in enumerate(label):
-            LABEL_REPRESENTATION[val.item()] = label_rep[idx]
+        # for idx, val in enumerate(label):
+        #     LABEL_REPRESENTATION[val.item()] = label_rep[idx]
         # 计算损失
         if (train_mode == "cosine"):
             loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
         if (train_mode == "dist"):
             loss = train_distloss_fun(out_1, out_2, out_3, label_rep, label)
+            print(loss)
         train_loss += loss.item()
+        print(train_loss)
         # 计算梯度
         loss.backward()
         # 更新参数

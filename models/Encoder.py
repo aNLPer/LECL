@@ -30,11 +30,11 @@ class FactEnc(nn.Module):
 
 
 class AccuEnc(nn.Module):
-    def __init__(self, input_size, hidden_size):
+    def __init__(self, voc_size,embedding_dim,input_size, hidden_size):
         super(AccuEnc,self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.hidden_size = hidden_size
-        self.embedding = None
+        self.embedding = nn.Embedding(voc_size, embedding_dim=embedding_dim, padding_idx=0)
         self.gru = nn.GRU(input_size, self.hidden_size, bidirectional=True)
         self.linear = nn.Sequential(
             nn.Linear(self.hidden_size * 2, hidden_size),
@@ -59,7 +59,7 @@ class Encoder(nn.Module):
     def __init__(self, voc_size, embed_dim, input_size, hidden_size):
         super(Encoder, self).__init__()
         self.factEnc = FactEnc(voc_size, embed_dim)
-        self.accuEnc = AccuEnc(input_size, hidden_size)
+        self.accuEnc = AccuEnc(voc_size, embed_dim, input_size, hidden_size)
         self.accuEnc.embedding = self.factEnc.embedding
 
     def forward(self, seq_1, seq_2, seq_3, label_desc):

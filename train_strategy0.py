@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset, DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from utils.commonUtils import Lang
-from torch.utils.tensorboard import SummaryWriter
+from tensorboardX import SummaryWriter
 from timeit import default_timer as timer
 import torch.optim as optim
 import torch

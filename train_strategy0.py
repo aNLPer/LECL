@@ -326,7 +326,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
             if x_label_rep[j].item() < M:
                 dissim_item += (M - x_label_rep[j])
 
-    return (sim_item+dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))
+    return (sim_item+dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))+1
 
 
 def predict(outputs):

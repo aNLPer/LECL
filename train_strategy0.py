@@ -21,8 +21,8 @@ EMBED_DIM = 256
 EPOCH = 100
 LABEL_DESC_MAX_LENGTH = 90 # 实际统计为83
 TEMPER = 1
-DIST_SCALE = 10
-M = 1 # distLoss的半径
+DIST_SCALE = 1000
+M = 0.02 # distLoss的半径
 
 # 加载语料库信息
 f = open("./dataprepare/lang_data_train_preprocessed.pkl", "rb")

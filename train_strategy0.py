@@ -139,7 +139,7 @@ seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH))
 label_tensor = torch.from_numpy(label_train)
 
 train_data = train_dataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor)
-train_data_loader = DataLoader(train_data, batch_size=24, shuffle=True)
+train_data_loader = DataLoader(train_data, batch_size=1, shuffle=False)
 
 seq, label_val = prepare_valid_data()
 seq_val_tensor = torch.from_numpy(pad_and_cut(seq, SEQ_MAX_LENGTH))

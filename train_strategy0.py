@@ -154,8 +154,6 @@ LABEL_REPRESENTATION = LABEL_REPRESENTATION.to(device)
 
 # 实例化模型
 model = Encoder(voc_size=lang.n_words, embed_dim=EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
-summary(model.factEnc, (BATCH_SIZE, SEQ_MAX_LENGTH))
-summary(model.accuEnc, (90, BATCH_SIZE))
 model = model.to(device)
 # # 模型初始化
 

@@ -14,8 +14,8 @@ import json
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 24
-LR_ACCU_ENC = 0.01
-LR_FACT_ENC = 0.05
+LR_ACCU_ENC = 0.001
+LR_FACT_ENC = 0.005
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100

@@ -382,9 +382,7 @@ def train(epoch, train_mode):
             loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
         if (train_mode == "dist"):
             loss = train_distloss_fun(out_1, out_2, out_3, label_rep, label)
-            print(loss)
         train_loss += loss.item()
-        print(train_loss)
         # 计算梯度
         loss.backward()
         # 更新参数

@@ -60,7 +60,7 @@ class Encoder(nn.Module):
         super(Encoder, self).__init__()
         self.factEnc = FactEnc(voc_size, embed_dim)
         self.accuEnc = AccuEnc(voc_size, embed_dim, input_size, hidden_size)
-        self.accuEnc.embedding = self.factEnc.embedding
+        # self.accuEnc.embedding = self.factEnc.embedding
 
     def forward(self, seq_1, seq_2, seq_3, label_desc):
         out_1 = self.factEnc(seq_1)

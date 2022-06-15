@@ -349,8 +349,9 @@ def predict(outputs):
 
 
 # 优化器
-optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
-optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
+# optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
+# optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
+optimizer = optim.Adam(model.parameters(), lr=0.001)
 
 train_loss_toral = []
 val_loss_total = []
@@ -368,8 +369,9 @@ def train(epoch, train_mode):
         # 使用GPU
         seq_1, seq_2, seq_3, label_desc = seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device)
         # 梯度清零
-        optimizer_factEnc.zero_grad()
-        optimizer_accuEnc.zero_grad()
+        # optimizer_factEnc.zero_grad()
+        # optimizer_accuEnc.zero_grad()
+        optimizer.zero_grad()
         # 计算模型的输出 [batch_size, d_model]
         out_1, out_2, out_3, label_rep = model(seq_1, seq_2, seq_3, label_desc)
         # 更新label表示向量
@@ -384,8 +386,9 @@ def train(epoch, train_mode):
         # 计算梯度
         loss.backward()
         # 更新参数
-        optimizer_factEnc.step()
-        optimizer_accuEnc.step()
+        # optimizer_factEnc.step()
+        # optimizer_accuEnc.step()
+        optimizer.step()
     train_loss = train_loss/len(train_data_loader.dataset)
     train_loss_toral.append(train_loss)
     end = timer()

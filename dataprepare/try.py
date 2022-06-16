@@ -45,7 +45,6 @@ def getLang(lang_name):
     print(lang.n_words)
 
 
-print(torch.sum(torch.tensor([[1],[2],[3],[4]]) == [[1],[0],[3],[4]]))
 
 
 # input1 = torch.randn(100, 128)
@@ -53,3 +52,5 @@ print(torch.sum(torch.tensor([[1],[2],[3],[4]]) == [[1],[0],[3],[4]]))
 # cos = nn.CosineSimilarity(dim=1, eps=1e-6)
 # output = cos(input1, input2)
 # print(output)
+
+print(0*float('inf'))

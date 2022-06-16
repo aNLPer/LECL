@@ -16,6 +16,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BATCH_SIZE = 4
 LR_ACCU_ENC = 0.001
 LR_FACT_ENC = 0.002
+LR = 0.001
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
@@ -242,82 +243,88 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = out_1[i].expand(batch_size, -1)
         # [batch_size]
-        x_out1 = torch.sqrt(torch.sum(0.5*(x - out_1) ** 2, dim=1))/ DIST_SCALE
+        x_out1 = torch.sqrt(torch.sum(0.5*(out_1 - x) ** 2, dim=1))
         # [batch_size]
-        x_out2 = torch.sqrt(torch.sum(0.5*(x - out_2) ** 2, dim=1)) / DIST_SCALE
+        x_out2 = torch.sqrt(torch.sum(0.5*(out_2 - x) ** 2, dim=1))
         # [batch_size]
-        x_out3 = torch.sqrt(torch.sum(0.5*(x - out_3) ** 2, dim=1)) / DIST_SCALE
+        x_out3 = torch.sqrt(torch.sum(0.5*(out_3 - x) ** 2, dim=1))
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum(0.5*(x - label_rep) ** 2, dim=1)) / DIST_SCALE
+        x_label_rep = torch.sqrt(torch.sum(0.5*(label_rep - x) ** 2, dim=1))
 
         # 相似样本
-        sim_item += x_out2[i]
-        sim_item += x_out3[i]
+        sim_item += (x_out2[i] + x_out3[i] + x_label_rep[i])
+
+        # # 不相似样本
+        # for j in range(i+1, batch_size):
+        #     if x_out1[j].item() < M:
+        #         dissim_item += (M-x_out1[j])
+        #
+        # for j in range(batch_size):
+        #     if j == i:
+        #         continue
+        #     if x_out2[j].item() < M:
+        #         dissim_item += (M-x_out2[j])
+        #     if x_out3[j].item() < M:
+        #         dissim_item += (M-x_out3[j])
+        #     if x_label_rep[j].item() < M:
+        #         dissim_item += (M-x_label_rep[j])
+
+    # out_2 样本损失
+    for i in range(batch_size):
+        # [batch_size, d_model]
+        x = out_2[i].expand(batch_size, -1)
+        # [batch_size]
+        x_out2 = torch.sqrt(torch.sum(0.5*(out_2 - x) ** 2, dim=1))
+        # [batch_size]
+        x_out3 = torch.sqrt(torch.sum(0.5*(out_3 - x) ** 2, dim=1))
+        # [batch_size]
+        x_label_rep = torch.sqrt(torch.sum(0.5*(label_rep - x) ** 2, dim=1))
+
+        # 相似样本
+        sim_item += (x_out3[i] + x_label_rep[i])
+
+        # # 不相似样本
+        # for j in range(i+1, batch_size):
+        #     if x_out2[j].item() < M:
+        #         dissim_item += (M-x_out2[j])
+        #
+        # for j in range(batch_size):
+        #     if j == i:
+        #         continue
+        #     if x_out3[j].item() < M:
+        #         dissim_item += (M - x_out3[j])
+        #     if x_label_rep[j].item() < M:
+        #         dissim_item += (M - x_label_rep[j])
+
+    # out_3 样本损失
+    for i in range(batch_size):
+        # [batch_size, d_model]
+        x = out_3[i].expand(batch_size, -1)
+        # [batch_size]
+        x_out3 = torch.sqrt(torch.sum(0.5*(out_3 - x) ** 2, dim=1)) / DIST_SCALE
+        # [batch_size]
+        x_label_rep = torch.sqrt(torch.sum(0.5*(label_rep - x) ** 2, dim=1)) / DIST_SCALE
+
+        # 相似样本
         sim_item += x_label_rep[i]
-        # 不相似样本
-        for j in range(batch_size):
-            if j == i:
-                continue
-            if x_out1[j].item() < M:
-                dissim_item += (M-x_out1[j])
-            if x_out2[j].item() < M:
-                dissim_item += (M-x_out2[j])
-            if x_out3[j].item() < M:
-                dissim_item += (M-x_out3[j])
-            if x_label_rep[j].item() < M:
-                dissim_item += (M-x_label_rep[j])
 
-    # # out_2 样本损失
-    # for i in range(batch_size):
-    #     # [batch_size, d_model]
-    #     x = out_2[i].expand(batch_size, -1)
-    #     # [batch_size]
-    #     x_out2 = torch.sqrt(torch.sum(0.5*(x - out_2) ** 2, dim=1)) / DIST_SCALE
-    #     # [batch_size]
-    #     x_out3 = torch.sqrt(torch.sum(0.5*(x - out_3) ** 2, dim=1)) / DIST_SCALE
-    #     # [batch_size]
-    #     x_label_rep = torch.sqrt(torch.sum(0.5*(x - label_rep) ** 2, dim=1)) / DIST_SCALE
-    #
-    #     # 相似样本
-    #     sim_item += x_out3[i]
-    #     sim_item += x_label_rep[i]
-    #     # 不相似样本
-    #     for j in range(batch_size):
-    #         if j == i:
-    #             continue
-    #         if x_out2[j].item() < M:
-    #             dissim_item += (M - x_out2[j])
-    #         if x_out3[j].item() < M:
-    #             dissim_item += (M - x_out3[j])
-    #         if x_label_rep[j].item() < M:
-    #             dissim_item += (M - x_label_rep[j])
-
-    # # out_3 样本损失
-    # for i in range(batch_size):
-    #     # [batch_size, d_model]
-    #     x = out_3[i].expand(batch_size, -1)
-    #     # [batch_size]
-    #     x_out3 = torch.sqrt(torch.sum(0.5*(x - out_3) ** 2, dim=1)) / DIST_SCALE
-    #     # [batch_size]
-    #     x_label_rep = torch.sqrt(torch.sum(0.5*(x - label_rep) ** 2, dim=1)) / DIST_SCALE
-    #
-    #     # 相似样本
-    #     sim_item += x_label_rep[i]
-    #     # 不相似样本
-    #     for j in range(batch_size):
-    #         if j == i:
-    #             continue
-    #         if x_out3[j].item() < M:
-    #             dissim_item += (M - x_out3[j])
-    #         if x_label_rep[j].item() < M:
-    #             dissim_item += (M - x_label_rep[j])
+        # # 不相似样本
+        # for j in range(i+1, batch_size):
+        #     if x_out3[j].item() < M:
+        #         dissim_item += (M-x_out3[j])
+        #
+        # for j in range(batch_size):
+        #     if j == i:
+        #         continue
+        #     if x_label_rep[j].item() < M:
+        #         dissim_item += (M - x_label_rep[j])
 
     # out_4 损失
     for i in range(batch_size):
         # [batch_size, d_model]
         x = label_rep[i].expand(batch_size, -1)
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum(0.5*(x - label_rep) ** 2, dim=1)) / DIST_SCALE
+        x_label_rep = torch.sqrt(torch.sum(0.5*(label_rep - x) ** 2, dim=1))
 
         # 不相似样本
         for j in range(i+1, batch_size):
@@ -325,8 +332,10 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
                 continue
             if x_label_rep[j].item() < M:
                 dissim_item += (M - x_label_rep[j])
-
-    return (sim_item+dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))+1
+    print(f"sim_item: {sim_item}")
+    print(f"dissim_item: {dissim_item}")
+    return sim_item+dissim_item
+    # return (sim_item+dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))+1
 
 
 def predict(outputs):
@@ -351,7 +360,7 @@ def predict(outputs):
 # 优化器
 # optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
 # optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=LR)
 
 train_loss_toral = []
 val_loss_total = []
@@ -380,7 +389,7 @@ def train(epoch, train_mode):
         # 计算损失
         if (train_mode == "cosine"):
             loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
-            # print(loss)
+            print(loss)
         if (train_mode == "dist"):
             loss = train_distloss_fun(out_1, out_2, out_3, label_rep, label)
             print(loss)

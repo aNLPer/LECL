@@ -13,10 +13,9 @@ import json
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 1
-LR_ACCU_ENC = 0.001
-LR_FACT_ENC = 0.002
-LR = 0.000001
+BATCH_SIZE = 4
+LR_ACCU_ENC = 0.01
+LR_FACT_ENC = 0.02
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
@@ -358,9 +357,9 @@ def predict(outputs):
 
 
 # 优化器
-# optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
-# optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
-optimizer = optim.Adam(model.parameters(), lr=LR)
+optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
+optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
+# optimizer = optim.Adam(model.parameters(), lr=LR)
 
 train_loss_toral = []
 val_loss_total = []
@@ -378,29 +377,29 @@ def train(epoch, train_mode):
         # 使用GPU
         seq_1, seq_2, seq_3, label_desc = seq_1.to(device), seq_2.to(device), seq_3.to(device), label_desc.to(device)
         # 梯度清零
-        # optimizer_factEnc.zero_grad()
-        # optimizer_accuEnc.zero_grad()
-        optimizer.zero_grad()
+        optimizer_factEnc.zero_grad()
+        optimizer_accuEnc.zero_grad()
+        # optimizer.zero_grad()
         # 计算模型的输出 [batch_size, d_model]
         out_1, out_2, out_3, label_rep = model(seq_1, seq_2, seq_3, label_desc)
         # 更新label表示向量
-        # for idx, val in enumerate(label):
-        #     LABEL_REPRESENTATION[val.item()] = label_rep[idx]
+        for idx, val in enumerate(label):
+            LABEL_REPRESENTATION[val.item()] = label_rep[idx]
         # 计算损失
         if (train_mode == "cosine"):
             loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
-            print(loss)
+            # print(loss)
         if (train_mode == "dist"):
             loss = train_distloss_fun(out_1, out_2, out_3, label_rep, label)
-            print(loss)
+            # print(loss)
         train_loss += loss.item()
-        print(train_loss)
+        # print(train_loss)
         # 计算梯度
         loss.backward()
         # 更新参数
-        # optimizer_factEnc.step()
-        # optimizer_accuEnc.step()
-        optimizer.step()
+        optimizer_factEnc.step()
+        optimizer_accuEnc.step()
+        # optimizer.step()
     train_loss = train_loss/len(train_data_loader.dataset)
     train_loss_toral.append(train_loss)
     end = timer()

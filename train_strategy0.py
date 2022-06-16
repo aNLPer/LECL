@@ -22,6 +22,7 @@ EPOCH = 100
 LABEL_DESC_MAX_LENGTH = 90 # 实际统计为83
 TEMPER = 1
 DIST_SCALE = 1
+
 M = 10 # distLoss的半径
 
 # 加载语料库信息
@@ -331,9 +332,8 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
                 continue
             if x_label_rep[j].item() < M:
                 dissim_item += (M - x_label_rep[j])
-    print(f"sim_item: {sim_item}")
-    print(f"dissim_item: {dissim_item}")
-    return sim_item+0.01*dissim_item
+
+    return 10*sim_item+0.01*dissim_item
     # return (sim_item+dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))+1
 
 

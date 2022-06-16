@@ -3,6 +3,8 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-a = torch.tensor([1,2,3],dtype=torch.float32)
-print(a.long())
-print(a)
+m = nn.LeakyReLU()
+input = torch.tensor([0.01, -0.3])
+print(input)
+output = m(input)
+print(output)

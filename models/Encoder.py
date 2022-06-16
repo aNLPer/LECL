@@ -9,10 +9,10 @@ class FactEnc(nn.Module):
         self.Bert = nn.TransformerEncoder(encoder_layer=self.enc_layer, num_layers=2)
         self.linear = nn.Sequential(nn.Linear(embedding_dim, 4*embedding_dim),
                                     # nn.BatchNorm1d(4*embedding_dim),
-                                    nn.ReLU(),
+                                    nn.LeakyReLU(),
                                     nn.Linear(4*embedding_dim, embedding_dim),
                                     # nn.BatchNorm1d(embedding_dim),
-                                    nn.ReLU()
+                                    nn.LeakyReLU()
                                     )
 
     def forward(self, x):
@@ -39,7 +39,7 @@ class AccuEnc(nn.Module):
         self.linear = nn.Sequential(
             nn.Linear(self.hidden_size * 2, hidden_size),
             # nn.BatchNorm1d(hidden_size),
-            nn.ReLU()
+            nn.LeakyReLU()
         )
 
     def forward(self, x): # x [seq_length, batch_size]

@@ -13,10 +13,10 @@ import json
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 4
+BATCH_SIZE = 1
 LR_ACCU_ENC = 0.001
 LR_FACT_ENC = 0.002
-LR = 0.001
+LR = 0.000001
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
@@ -334,7 +334,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
                 dissim_item += (M - x_label_rep[j])
     print(f"sim_item: {sim_item}")
     print(f"dissim_item: {dissim_item}")
-    return sim_item+dissim_item
+    return sim_item+0.01*dissim_item
     # return (sim_item+dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))+1
 
 

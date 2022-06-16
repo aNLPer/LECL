@@ -226,13 +226,13 @@ def train_cosloss_fun(out_1, out_2, out_3, label_rep):
 
 def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
     """
-        损失函数
-        :param out_1: tensor
-        :param out_2: tensor
-        :param out_3: tensor
-        :param label_rep tensor
-        :return: loss scalar
-        """
+    损失函数
+    :param out_1: tensor
+    :param out_2: tensor
+    :param out_3: tensor
+    :param label_rep tensor
+    :return: loss scalar
+    """
     batch_size = out_1.shape[0]
     sim_item = 0
     dissim_item = 0
@@ -267,52 +267,52 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
             if x_label_rep[j].item() < M:
                 dissim_item += (M-x_label_rep[j])
 
-    # out_2 样本损失
-    for i in range(batch_size):
-        # [batch_size, d_model]
-        x = out_2[i].expand(batch_size, -1)
-        # [batch_size]
-        x_out2 = torch.sqrt(torch.sum(0.5*(x - out_2) ** 2, dim=1)) / DIST_SCALE
-        # [batch_size]
-        x_out3 = torch.sqrt(torch.sum(0.5*(x - out_3) ** 2, dim=1)) / DIST_SCALE
-        # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum(0.5*(x - label_rep) ** 2, dim=1)) / DIST_SCALE
+    # # out_2 样本损失
+    # for i in range(batch_size):
+    #     # [batch_size, d_model]
+    #     x = out_2[i].expand(batch_size, -1)
+    #     # [batch_size]
+    #     x_out2 = torch.sqrt(torch.sum(0.5*(x - out_2) ** 2, dim=1)) / DIST_SCALE
+    #     # [batch_size]
+    #     x_out3 = torch.sqrt(torch.sum(0.5*(x - out_3) ** 2, dim=1)) / DIST_SCALE
+    #     # [batch_size]
+    #     x_label_rep = torch.sqrt(torch.sum(0.5*(x - label_rep) ** 2, dim=1)) / DIST_SCALE
+    #
+    #     # 相似样本
+    #     sim_item += x_out3[i]
+    #     sim_item += x_label_rep[i]
+    #     # 不相似样本
+    #     for j in range(batch_size):
+    #         if j == i:
+    #             continue
+    #         if x_out2[j].item() < M:
+    #             dissim_item += (M - x_out2[j])
+    #         if x_out3[j].item() < M:
+    #             dissim_item += (M - x_out3[j])
+    #         if x_label_rep[j].item() < M:
+    #             dissim_item += (M - x_label_rep[j])
 
-        # 相似样本
-        sim_item += x_out3[i]
-        sim_item += x_label_rep[i]
-        # 不相似样本
-        for j in range(batch_size):
-            if j == i:
-                continue
-            if x_out2[j].item() < M:
-                dissim_item += (M - x_out2[j])
-            if x_out3[j].item() < M:
-                dissim_item += (M - x_out3[j])
-            if x_label_rep[j].item() < M:
-                dissim_item += (M - x_label_rep[j])
+    # # out_3 样本损失
+    # for i in range(batch_size):
+    #     # [batch_size, d_model]
+    #     x = out_3[i].expand(batch_size, -1)
+    #     # [batch_size]
+    #     x_out3 = torch.sqrt(torch.sum(0.5*(x - out_3) ** 2, dim=1)) / DIST_SCALE
+    #     # [batch_size]
+    #     x_label_rep = torch.sqrt(torch.sum(0.5*(x - label_rep) ** 2, dim=1)) / DIST_SCALE
+    #
+    #     # 相似样本
+    #     sim_item += x_label_rep[i]
+    #     # 不相似样本
+    #     for j in range(batch_size):
+    #         if j == i:
+    #             continue
+    #         if x_out3[j].item() < M:
+    #             dissim_item += (M - x_out3[j])
+    #         if x_label_rep[j].item() < M:
+    #             dissim_item += (M - x_label_rep[j])
 
-    # out_3 样本损失
-    for i in range(batch_size):
-        # [batch_size, d_model]
-        x = out_3[i].expand(batch_size, -1)
-        # [batch_size]
-        x_out3 = torch.sqrt(torch.sum(0.5*(x - out_3) ** 2, dim=1)) / DIST_SCALE
-        # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum(0.5*(x - label_rep) ** 2, dim=1)) / DIST_SCALE
-
-        # 相似样本
-        sim_item += x_label_rep[i]
-        # 不相似样本
-        for j in range(batch_size):
-            if j == i:
-                continue
-            if x_out3[j].item() < M:
-                dissim_item += (M - x_out3[j])
-            if x_label_rep[j].item() < M:
-                dissim_item += (M - x_label_rep[j])
-
-    # out_4 样本损失
+    # out_4 损失
     for i in range(batch_size):
         # [batch_size, d_model]
         x = label_rep[i].expand(batch_size, -1)

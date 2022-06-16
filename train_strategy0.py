@@ -13,9 +13,9 @@ import json
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 24
-LR_ACCU_ENC = 0.0
-LR_FACT_ENC = 0.0
+BATCH_SIZE = 4
+LR_ACCU_ENC = 0.001
+LR_FACT_ENC = 0.002
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
@@ -139,7 +139,7 @@ seq_3_tensor = torch.from_numpy(pad_and_cut(seq_3, SEQ_MAX_LENGTH))
 label_tensor = torch.from_numpy(label_train)
 
 train_data = train_dataset(seq_1_tensor, seq_2_tensor, seq_3_tensor, label_tensor)
-train_data_loader = DataLoader(train_data, batch_size=1, shuffle=False)
+train_data_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True)
 
 seq, label_val = prepare_valid_data()
 seq_val_tensor = torch.from_numpy(pad_and_cut(seq, SEQ_MAX_LENGTH))
@@ -380,9 +380,12 @@ def train(epoch, train_mode):
         # 计算损失
         if (train_mode == "cosine"):
             loss = train_cosloss_fun(out_1, out_2, out_3, label_rep)
+            # print(loss)
         if (train_mode == "dist"):
             loss = train_distloss_fun(out_1, out_2, out_3, label_rep, label)
+            # print(loss)
         train_loss += loss.item()
+        # print(train_loss)
         # 计算梯度
         loss.backward()
         # 更新参数
@@ -418,6 +421,6 @@ def evaluate(epoch):
 
 print("start train...")
 for epoch in range(EPOCH):
-    train(epoch, train_mode="dist")
+    train(epoch, train_mode="cosine")
     evaluate(epoch)
 

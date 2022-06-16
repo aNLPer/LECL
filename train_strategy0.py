@@ -242,13 +242,13 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = out_1[i].expand(batch_size, -1)
         # [batch_size]
-        x_out1 = torch.sqrt(torch.sum(0.5*(out_1 - x) ** 2, dim=1) + 0.001)
+        x_out1 = torch.sum(0.5*(out_1 - x) ** 2, dim=1)/batch_size
         # [batch_size]
-        x_out2 = torch.sqrt(torch.sum(0.5*(out_2 - x) ** 2, dim=1) + 0.001)
+        x_out2 = torch.sum(0.5*(out_2 - x) ** 2, dim=1)/batch_size
         # [batch_size]
-        x_out3 = torch.sqrt(torch.sum(0.5*(out_3 - x) ** 2, dim=1) + 0.001)
+        x_out3 = torch.sum(0.5*(out_3 - x) ** 2, dim=1)/batch_size
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum(0.5*(label_rep - x) ** 2, dim=1) + 0.001)
+        x_label_rep = torch.sum(0.5*(label_rep - x) ** 2, dim=1)/batch_size
 
         # 相似样本
         sim_item += (x_out2[i] + x_out3[i] + x_label_rep[i])
@@ -273,12 +273,11 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = out_2[i].expand(batch_size, -1)
         # [batch_size]
-        x_out2 = torch.sqrt(torch.sum(0.5*(out_2 - x) ** 2, dim=1) + 0.001)
+        x_out2 = torch.sum(0.5*(out_2 - x) ** 2, dim=1)/batch_size
         # [batch_size]
-        x_out3 = torch.sqrt(torch.sum(0.5*(out_3 - x) ** 2, dim=1) + 0.001)
+        x_out3 = torch.sum(0.5*(out_3 - x) ** 2, dim=1)/batch_size
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum(0.5*(label_rep - x) ** 2, dim=1) + 0.001)
-
+        x_label_rep = torch.sum(0.5*(label_rep - x) ** 2, dim=1)/batch_size
         # 相似样本
         sim_item += (x_out3[i] + x_label_rep[i])
 
@@ -300,10 +299,9 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = out_3[i].expand(batch_size, -1)
         # [batch_size]
-        x_out3 = torch.sqrt(torch.sum(0.5*(out_3 - x) ** 2, dim=1) + 0.001) / DIST_SCALE
+        x_out3 = torch.sum(0.5*(out_3 - x) ** 2, dim=1) / batch_size
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum(0.5*(label_rep - x) ** 2, dim=1) + 0.001) / DIST_SCALE
-
+        x_label_rep = torch.sum(0.5*(label_rep - x) ** 2, dim=1) / batch_size
         # 相似样本
         sim_item += x_label_rep[i]
 
@@ -323,7 +321,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
         # [batch_size, d_model]
         x = label_rep[i].expand(batch_size, -1)
         # [batch_size]
-        x_label_rep = torch.sqrt(torch.sum(0.5*(label_rep - x) ** 2, dim=1) + 0.001)
+        x_label_rep = torch.sum(0.5*(label_rep - x) ** 2, dim=1)/batch_size
 
         # 不相似样本
         for j in range(i+1, batch_size):

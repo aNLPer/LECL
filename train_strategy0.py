@@ -383,9 +383,9 @@ def train(epoch, train_mode):
             # print(loss)
         if (train_mode == "dist"):
             loss = train_distloss_fun(out_1, out_2, out_3, label_rep, label)
-            # print(loss)
+            print(loss)
         train_loss += loss.item()
-        # print(train_loss)
+        print(train_loss)
         # 计算梯度
         loss.backward()
         # 更新参数
@@ -412,7 +412,7 @@ def evaluate(epoch):
             # 得到预测标签 [batch_size]
             preds = predict(outputs)
             label = label.squeeze()
-            acc = torch.sum(torch.eq(preds, label))/len(label)
+            acc = torch.sum(torch.eq(preds, label))/label.size()[0]
             # 计算损失
             # loss = 0
             # val_loss += loss.item()
@@ -421,6 +421,6 @@ def evaluate(epoch):
 
 print("start train...")
 for epoch in range(EPOCH):
-    train(epoch, train_mode="cosine")
+    train(epoch, train_mode="dist")
     evaluate(epoch)
 

@@ -8,3 +8,5 @@ input = torch.tensor([0.01, -0.3])
 print(input)
 output = m(input)
 print(output)
+
+print(input.shape)

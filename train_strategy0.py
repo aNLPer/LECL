@@ -13,7 +13,7 @@ import json
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-BATCH_SIZE = 4
+BATCH_SIZE = 24
 LR_ACCU_ENC = 0.01
 LR_FACT_ENC = 0.02
 SEQ_MAX_LENGTH = 500
@@ -22,7 +22,6 @@ EPOCH = 100
 LABEL_DESC_MAX_LENGTH = 90 # 实际统计为83
 TEMPER = 1
 DIST_SCALE = 1
-
 M = 10 # distLoss的半径
 
 # 加载语料库信息
@@ -333,7 +332,7 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
             if x_label_rep[j].item() < M:
                 dissim_item += (M - x_label_rep[j])
 
-    return 10*sim_item+0.01*dissim_item
+    return (10*sim_item+0.01*dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))+1
     # return (sim_item+dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))+1
 
 

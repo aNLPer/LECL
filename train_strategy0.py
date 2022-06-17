@@ -435,7 +435,7 @@ def evaluate(epoch, eval_mode):
             # 得到预测标签 [batch_size]
             if model == "dist":
                 preds = dist_predict(outputs)
-            if model == "cosine":
+            else:
                 preds = cosine_predict(outputs)
             label = label.squeeze()
             acc = torch.sum(torch.eq(preds, label))/label.size()[0]

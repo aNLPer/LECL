@@ -15,8 +15,8 @@ import json
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 BATCH_SIZE = 24
-LR_ACCU_ENC = 0.01
-LR_FACT_ENC = 0.02
+LR_ACCU_ENC = 0.1
+LR_FACT_ENC = 0.2
 SEQ_MAX_LENGTH = 500
 EMBED_DIM = 256
 EPOCH = 100
@@ -158,7 +158,11 @@ model = Encoder(voc_size=lang.n_words, embed_dim=EMBED_DIM, input_size=EMBED_DIM
 model = model.to(device)
 
 # 模型初始化
-model.init_weight()
+# model.init_weight()
+
+# 梯度裁剪
+# gradient_clip = torch.nn.utils.clip_grad_norm(parameters=model.parameters(), max_norm=10, norm_type=2)
+
 # 定义损失函数
 def train_cosloss_fun(out_1, out_2, out_3, label_rep):
     """
@@ -373,7 +377,7 @@ def dist_predict(outputs):
 
 # 优化器
 optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
-optimizer_accuEnc = optim.Adam(model.accuEnc.parameters(), lr=LR_ACCU_ENC)
+optimizer_accuEnc = optim.SGD(params=model.accuEnc.parameters(), lr=LR_ACCU_ENC)
 # optimizer = optim.Adam(model.parameters(), lr=LR)
 
 train_loss_toral = []
@@ -411,6 +415,8 @@ def train(epoch, train_mode):
         # print(train_loss)
         # 计算梯度
         loss.backward()
+        # 梯度裁剪
+        nn.utils.clip_grad_norm(parameters=model.parameters(), max_norm=30, norm_type=2)
         # 更新参数
         optimizer_factEnc.step()
         optimizer_accuEnc.step()
@@ -422,20 +428,20 @@ def train(epoch, train_mode):
 
 
 def evaluate(epoch, eval_mode):
-    # 设置模型为评估状态
+    # 设置模型为评估状态（调整BN、Dropout等计算方式）
     model.eval()
     # 记录每个epoch的loss
     val_loss = 0
-    # 不跟踪梯度
+    # 不跟踪梯度(模型不在执行autograd)
     with torch.no_grad():
         for seq, label in val_data_loader:
             seq, label = seq.to(device), label.to(device)
             # 计算模型的输出 [batch_size, d_model]
             outputs = model.factEnc(seq)
             # 得到预测标签 [batch_size]
-            if model == "dist":
+            if eval_mode == "dist":
                 preds = dist_predict(outputs)
-            else:
+            if eval_mode == "cosine":
                 preds = cosine_predict(outputs)
             label = label.squeeze()
             acc = torch.sum(torch.eq(preds, label))/label.size()[0]
@@ -447,6 +453,6 @@ def evaluate(epoch, eval_mode):
 
 print("start train...")
 for epoch in range(EPOCH):
-    train(epoch, train_mode="dist")
+    # train(epoch, train_mode="dist")
     evaluate(epoch, eval_mode="cosine")
 

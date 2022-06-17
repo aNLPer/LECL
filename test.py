@@ -4,7 +4,7 @@ import numpy as np
 import torch.nn as nn
 
 m = nn.Dropout(p=0.9)
-input = torch.randn(6, 3)
+input = torch.randn(3, 3, 3)
 print(input)
 output = m(input)
 print(output)

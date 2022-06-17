@@ -334,11 +334,11 @@ def train_distloss_fun(out_1, out_2, out_3, label_rep, label):
     # return (sim_item+dissim_item)/(0.5*(4*batch_size)*(4*batch_size-1))+1
 
 
-def predict(outputs):
+def cosine_predict(outputs):
     """
     得到预测标签
     :param outputs: [batch_size, d_model]
-    :return: preds
+    :return: preds :预测标签
     """
     preds = []
     for rep in outputs:
@@ -352,6 +352,22 @@ def predict(outputs):
         preds.append(pred)
     return torch.tensor(preds).to(device)
 
+def dist_predict(outputs):
+    """
+    :param outputs: 模型输出
+    :return: preds ：模型预测结果
+    """
+    preds = []
+    for rep in outputs:
+        # [112, EMBED_DIM]
+        reps = rep.repeat(len(LABEL_REPRESENTATION), 1)
+        # [112]
+        dists = torch.sum((reps - LABEL_REPRESENTATION)**2, dim=1)
+        # max similarity corresponding index
+        pred = torch.argmax(dists)
+        # batch_size
+        preds.append(pred)
+    return torch.tensor(preds)
 
 # 优化器
 optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
@@ -403,7 +419,7 @@ def train(epoch, train_mode):
     print(f"Epoch: {epoch},   Training Loss: {train_loss},  time: {(end-start)/60} min/epoch")
 
 
-def evaluate(epoch):
+def evaluate(epoch, eval_mode):
     # 设置模型为评估状态
     model.eval()
     # 记录每个epoch的loss
@@ -415,7 +431,10 @@ def evaluate(epoch):
             # 计算模型的输出 [batch_size, d_model]
             outputs = model.factEnc(seq)
             # 得到预测标签 [batch_size]
-            preds = predict(outputs)
+            if model == "dist":
+                preds = dist_predict(outputs)
+            if model == "cosine":
+                preds = cosine_predict(outputs)
             label = label.squeeze()
             acc = torch.sum(torch.eq(preds, label))/label.size()[0]
             # 计算损失
@@ -427,5 +446,5 @@ def evaluate(epoch):
 print("start train...")
 for epoch in range(EPOCH):
     train(epoch, train_mode="dist")
-    evaluate(epoch)
+    evaluate(epoch, eval_mode="cosine")
 

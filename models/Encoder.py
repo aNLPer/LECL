@@ -68,3 +68,11 @@ class Encoder(nn.Module):
         out_3 = self.factEnc(seq_3)
         label_rep = self.accuEnc(label_desc)
         return out_1, out_2, out_3, label_rep
+
+    def init_weight(self):
+        print("------factEnc---------")
+        for m in self.factEnc.modules():
+            print(m)
+        print("--------accuEnc---------")
+        for m in self.accuEnc.modules():
+            print(m)

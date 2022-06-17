@@ -3,8 +3,8 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-t = 0
-x = torch.tensor(10,dtype=torch.float32, requires_grad=True)
-for i in range(3):
-    t = t+x
-print(t)
+m = nn.Dropout(p=0.9)
+input = torch.randn(6, 3)
+print(input)
+output = m(input)
+print(output)

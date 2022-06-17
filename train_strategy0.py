@@ -6,6 +6,7 @@ from tensorboardX import SummaryWriter
 from timeit import default_timer as timer
 import torch.optim as optim
 import torch
+import torch.nn as nn
 import numpy as np
 import pickle
 from models.Encoder import Encoder
@@ -155,8 +156,9 @@ LABEL_REPRESENTATION = LABEL_REPRESENTATION.to(device)
 # 实例化模型
 model = Encoder(voc_size=lang.n_words, embed_dim=EMBED_DIM, input_size=EMBED_DIM, hidden_size=EMBED_DIM)
 model = model.to(device)
-# # 模型初始化
 
+# 模型初始化
+model.init_weight()
 # 定义损失函数
 def train_cosloss_fun(out_1, out_2, out_3, label_rep):
     """
@@ -367,7 +369,7 @@ def dist_predict(outputs):
         pred = torch.argmax(dists)
         # batch_size
         preds.append(pred)
-    return torch.tensor(preds)
+    return torch.tensor(preds).to(device)
 
 # 优化器
 optimizer_factEnc = optim.Adam(model.factEnc.parameters(), lr=LR_FACT_ENC)
